@@ -181,7 +181,7 @@
       try {
         let finalImageUrl = postojeciSlikaUrl;
 
-        // Ako je izabrana nova slika, učitaj je u storage
+        // Ako je izabrana nova slika, učitaj je u bucket GALERIJA
         if (fileInput.files.length > 0) {
           statusDiv.textContent = 'Upload nove slike u toku...';
           const file = fileInput.files[0];
@@ -190,16 +190,16 @@
           const filePath = `avatari/${fileName}`;
 
           const { data: storageData, error: storageError } = await _supabase.storage
-            .from('slike')
+            .from('GALERIJA')
             .upload(filePath, file, { upsert: true });
 
           if (storageError) {
             throw new Error("Greška pri uploadu slike: " + storageError.message);
           }
 
-          // Dobavljanje javnog URL-a
+          // Dobavljanje javnog URL-a iz GALERIJA bucketa
           const { data: urlData } = _supabase.storage
-            .from('slike')
+            .from('GALERIJA')
             .getPublicUrl(filePath);
 
           if (urlData && urlData.publicUrl) {
@@ -228,16 +228,6 @@
 
         if (updateError) throw updateError;
 
-        // Također ažuriramo i tabelu SLIKE ako postoji
-        if (fileInput.files.length > 0 && trenutniUserKorisnikId) {
-          await _supabase.from('SLIKE').insert([
-            {
-              korisnik_id: trenutniUserKorisnikId,
-              url: finalImageUrl
-            }
-          ]).catch(e => console.warn("Tabela SLIKE update preskočen:", e));
-        }
-
         statusDiv.style.color = 'green';
         statusDiv.textContent = 'Profil i slika su uspješno sačuvani!';
         
@@ -246,7 +236,7 @@
           postojeciSlikaUrl = finalImageUrl;
         }
 
-        fileInput.value = ""; // Resetovanje file inputa
+        fileInput.value = "";
 
         setTimeout(() => {
           statusDiv.textContent = '';
