@@ -3,39 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard | DocBizHub</title>
+  <title>Dashboard | LjubavNaPrviKlik</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
 
-    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
-    .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #3742fa; }
+    .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #d90429; }
     #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
     
-    .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
-    .btn-nav:hover { background: #2f3542; }
-    .btn-logout { background: #6c757d; }
+    .btn-nav { background: #fff; color: #d90429; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ffe3e6; }
+    .btn-logout { background: #6c757d; color: #fff; }
     .btn-logout:hover { background: #495057; }
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
-    .welcome-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(55, 66, 250, 0.08); border-left: 6px solid #3742fa; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-    .welcome-text h1 { color: #1e1f29; font-size: 1.8rem; margin-bottom: 5px; }
+    .welcome-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.08); border-left: 6px solid #d90429; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .welcome-text h1 { color: #800020; font-size: 1.8rem; margin-bottom: 5px; }
     .welcome-text p { color: #666; font-size: 1rem; }
-    .user-badge { background: #e0e0ff; color: #3742fa; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+    .user-badge { background: #ffe3e6; color: #d90429; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
 
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-    .dash-tile { background: #fff; padding: 25px; border-radius: 16px; text-decoration: none; color: #2b2d42; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f0f0f0; cursor: pointer; }
-    .dash-tile:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(55, 66, 250, 0.15); border-color: #b8bfff; }
+    .dash-tile { background: #fff; padding: 25px; border-radius: 16px; text-decoration: none; color: #2b2d42; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #ffd1d6; cursor: pointer; }
+    .dash-tile:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(217, 4, 41, 0.15); border-color: #d90429; }
     .dash-tile .icon { font-size: 2.5rem; }
-    .dash-tile h3 { color: #1e1f29; font-size: 1.2rem; }
+    .dash-tile h3 { color: #800020; font-size: 1.2rem; }
     .dash-tile p { font-size: 0.85rem; color: #777; }
 
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
@@ -44,7 +44,7 @@
 <body>
 
   <header>
-    <a href="DASHBOARD.html" class="logo">🚀 DocBizHub</a>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
 
     <div class="nav-actions">
       <div class="lang-wrapper">
@@ -62,8 +62,8 @@
 
     <div class="welcome-card">
       <div class="welcome-text">
-        <h1 id="txtWelcome">Dobrodošli nazad na DocBizHub! 👋</h1>
-        <p id="txtSubWelcome">Vaša centralna platforma za biznis, projekte, dokumente i profesionalno umrežavanje.</p>
+        <h1 id="txtWelcome">Dobrodošli nazad na LjubavNaPrviKlik! 👋</h1>
+        <p id="txtSubWelcome">Vaše centralno mjesto za spajanje ljudi, sklapanje novih poznanstva i pronalaženje srodnih duša.</p>
       </div>
       <div class="user-badge" id="lblUserEmail">Učitavanje profila...</div>
     </div>
@@ -73,43 +73,43 @@
       <a href="PROFIL.html" class="dash-tile">
         <div class="icon">👤</div>
         <h3>Moj Profil</h3>
-        <p>Uredite svoje poslovne podatke, CV i postavke naloga.</p>
+        <p>Uredite svoje lične podatke, fotografije i kriterijume pretrage.</p>
       </a>
 
       <a href="FORUM.html" class="dash-tile">
         <div class="icon">🗣️</div>
-        <h3>Poslovni Forum</h3>
-        <p>Diskutujte o projektima, tehnologijama i razmjenjujte iskustva.</p>
+        <h3>Zajednica & Forum</h3>
+        <p>Diskutujte o ljubavi, vezama i razmjenjujte romantična iskustva.</p>
       </a>
 
       <a href="PORUKE.html" class="dash-tile">
         <div class="icon">💬</div>
         <h3>Poruke & Chat</h3>
-        <p>Pregledajte vaše aktivne poslovne razgovore i dogovore.</p>
+        <p>Pregledajte vaše aktivne razgovore i privatne poruke sa članovima.</p>
       </a>
 
       <a href="PRETRAGA.html" class="dash-tile">
         <div class="icon">🔍</div>
-        <h3>Pretraga</h3>
-        <p>Brzo pronađite željene podatke, dokumente i sadržaje u bazi.</p>
+        <h3>Pretraga Članova</h3>
+        <p>Pronađite osobe po vašim mjerilima, interesovanjima i željama.</p>
       </a>
 
       <a href="INVALID.html" class="dash-tile">
         <div class="icon">♿</div>
-        <h3>Invalid</h3>
-        <p>Pristup prilagođenim postavkama i opcijama pristupačnosti.</p>
+        <h3>Prilagođeni Pristup</h3>
+        <p>Opcije i podešavanja za lakše i pristupačnije korištenje sajta.</p>
       </a>
 
       <a href="TEST.html" class="dash-tile">
         <div class="icon">🧪</div>
-        <h3>Test</h3>
-        <p>Pokrenite sistemske provjere, testove i dijagnostiku.</p>
+        <h3>Ljubavni Testovi</h3>
+        <p>Isprobajte zabavne testove kompatibilnosti i provjerite slaganje.</p>
       </a>
 
       <a href="ZABAVA.html" class="dash-tile">
         <div class="icon">🎉</div>
-        <h3>Kutak za Odmor</h3>
-        <p>Opustite se uz zanimljiv sadržaj van svakodnevnih obaveza.</p>
+        <h3>Kutak za Zabavu</h3>
+        <p>Opustite se uz zanimljiv sadržaj i ugodno druženje.</p>
       </a>
 
     </div>
@@ -117,7 +117,7 @@
   </div>
 
   <footer>
-    <p>© 2026 DocBizHub. Sva prava zadržana.</p>
+    <p>© 2026 LjubavNaPrviKlik (Langlove). Sva prava zadržana.</p>
   </footer>
 
   <script type="text/javascript">
