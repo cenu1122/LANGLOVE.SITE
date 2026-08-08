@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zajednica & Projekti | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* Osnovne postavke sa prilagodljivom veličinom fonta */
+    :root { --font-scale: 1rem; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; font-size: var(--font-scale); }
+
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-nav { background: #fff; color: #d90429; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ffe3e6; }
+
+    /* Traka za pristupačnost (povećanje slova) */
+    .accessibility-bar { background: #2b2d42; color: #fff; padding: 10px 5%; display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap; font-size: 0.9rem; }
+    .btn-accessibility { background: #3742fa; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-accessibility:hover { background: #535c68; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; overflow-x: hidden; }
+
+    .card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #ffd1d6; display: flex; flex-direction: column; gap: 15px; width: 100%; word-break: break-word; }
+    .card h1, .card h2 { color: #800020; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    
+    .btn-submit { background-color: #d90429; color: #fff; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn-submit:hover { background-color: #b50322; }
+
+    .post-item { background: #fafafa; padding: 15px; border-radius: 12px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 8px; }
+    .post-title { font-weight: bold; color: #800020; font-size: 1.1rem; }
+    .post-meta { font-size: 0.8rem; color: #777; }
+
+    .comments-box { margin-top: 10px; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 6px; }
+    .comment-row { display: flex; gap: 8px; margin-top: 5px; }
+    .comment-row input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
+    .btn-comment { background: #3742fa; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <div class="nav-actions">
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
+      <a href="PROFIL.html" class="btn-nav">👤 Moj Profil</a>
+    </div>
+  </header>
+
+  <!-- Traka za prilagođavanje slova (Pristupačnost) -->
+  <div class="accessibility-bar">
+    <span>Pristupačnost - Veličina slova:</span>
+    <button class="btn-accessibility" onclick="promijeniVelicinuSlova(-1)">A- Smanji</button>
+    <button class="btn-accessibility" onclick="resetujSlova()">Normalno</button>
+    <button class="btn-accessibility" onclick="promijeniVelicinuSlova(1)">A+ Povećaj</button>
+  </div>
+
+  <div class="main-container">
+
+    <!-- Kartica sa AI Forumom -->
+    <div class="card">
+      <span style="background: #ffe3e6; color: #d90429; padding: 4px 10px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; width: fit-content;">✨ AI Asistent Zajednica</span>
+      <h1>Forum i Podrška</h1>
+      <p>Teme o inkluziji, pristupačnosti, svakodnevnim izazovima i ohrabrenju koje generiše umjetna inteligencija.</p>
+      
+      <div id="aiForumFeed">
+        <p style="color: #666;">Učitavanje AI tema...</p>
+      </div>
+    </div>
+
+    <!-- Kartica za dodavanje projekata -->
+    <div class="card">
+      <h2>Dodajte Vaš Projekat ili Inicijativu</h2>
+      <p>Podijelite svoju ideju, rad ili projekt sa zajednicom kako bismo se međusobno povezali i podržali.</p>
+      
+      <div class="form-group">
+        <label>Naziv projekta</label>
+        <input type="text" id="projNaziv" placeholder="Unesite naziv projekta...">
+      </div>
+
+      <div class="form-group">
+        <label>Opis projekta</label>
+        <textarea id="projOpis" placeholder="Opišite šta radite i šta vam je potrebno..."></textarea>
+      </div>
+
+      <button class="btn-submit" onclick="objaviProjekat()">Objavi Projekat</button>
+    </div>
+
+    <!-- Lista objavljenih projekata -->
+    <div class="card">
+      <h2>Objavljeni Projekti Članova</h2>
+      <div id="projektiFeed">
+        <p style="color: #666;">Učitavanje projekata...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik (Langlove). Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const GROQ_API_KEY = "Ovdje_unesi_svoj_groq_kljuc"; // Zamijeniti sa pravim Groq ključem po potrebi
+    let trenutniKorisnikIme = "Član";
+
+    // Funkcija za povećavanje/smanjenje slova unutar dozvoljenih granica da ne izlazi van ekrana
+    let trenutnaSkala = 1.0;
+    function promijeniVelicinuSlova(korak) {
+      trenutnaSkala += korak * 0.1;
+      if (trenutnaSkala < 0.85) trenutnaSkala = 0.85;
+      if (trenutnaSkala > 1.4) trenutnaSkala = 1.4; // Ograničeno da ne ruši raspored ekrana
+      document.documentElement.style.setProperty('--font-scale', trenutnaSkala + 'rem');
+    }
+    function resetujSlova() {
+      trenutnaSkala = 1.0;
+      document.documentElement.style.setProperty('--font-scale', '1rem');
+    }
+
+    async function inicijalizacija() {
+      await dohvatiKorisnika();
+      await provjeriI_GenerisiAiTemu();
+      await ucitajSadrzaje();
+    }
+
+    async function dohvatiKorisnika() {
+      const { data: { user } } = await _supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .select('IME')
+          .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
+          .maybeSingle();
+        if (profile && profile.IME) trenutniKorisnikIme = profile.IME;
+      }
+    }
+
+    async function provjeriI_GenerisiAiTemu() {
+      try {
+        const { data: postojece } = await _supabase
+          .from('INVALID_FORUM')
+          .select('id, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        const danas = new Date().toISOString().split('T')[0];
+        let trebaNovu = true;
+        if (postojece && postojece.length > 0) {
+          if (postojece[0].created_at.split('T')[0] === danas) trebaNovu = false;
+        }
+
+        if (trebaNovu && GROQ_API_KEY && !GROQ_API_KEY.includes("Ovdje")) {
+          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "llama3-70b-8192",
+              messages: [{ role: "user", content: "Napiši inspirativnu temu za forum namijenjenu osobama sa invaliditetom, o snazi, podršci, umrežavanju i ljubavi. Vrati u JSON formatu sa poljima 'naslov' i 'sadrzaj'." }],
+              response_format: { type: "json_object" }
+            })
+          });
+          const data = await res.json();
+          if (data.choices && data.choices[0]) {
+            const parsed = JSON.parse(data.choices[0].message.content);
+            await _supabase.from('INVALID_FORUM').insert([{ naslov: parsed.naslov, sadrzaj: parsed.sadrzaj, autor: "AI Podrška ❤️" }]);
+          }
+        }
+      } catch (e) { console.warn("AI greška:", e); }
+    }
+
+    async function ucitajSadrzaje() {
+      // Učitavanje foruma
+      const { data: teme } = await _supabase.from('INVALID_FORUM').select('*').order('created_at', { ascending: false });
+      const { data: komentari } = await _supabase.from('INVALID_KOMENTARI').select('*');
+      
+      let forumHtml = '';
+      if (teme && teme.length > 0) {
+        teme.forEach(t => {
+          const komZaTemu = komentari ? komentari.filter(k => k.tema_id === t.id) : [];
+          let komHtml = '';
+          komZaTemu.forEach(k => {
+            komHtml += `<div style="font-size: 0.9rem; padding: 4px 0; border-bottom: 1px solid #eee;"><b>${escapeHtml(k.autor)}:</b> ${escapeHtml(k.sadrzaj)}</div>`;
+          });
+
+          forumHtml += `
+            <div class="post-item">
+              <div class="post-meta">Autor: <b>${escapeHtml(t.autor)}</b></div>
+              <div class="post-title">${escapeHtml(t.naslov)}</div>
+              <div>${escapeHtml(t.sadrzaj)}</div>
+              <div class="comments-box">
+                <small><b>Komentari (${komZaTemu.length}):</b></small>
+                ${komHtml || '<small style="color:#777;">Nema komentara.</small>'}
+                <div class="comment-row">
+                  <input type="text" id="kom-${t.id}" placeholder="Napišite komentar...">
+                  <button class="btn-comment" onclick="posaljiKomentar(${t.id})">Pošalji</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      } else { forumHtml = '<p>Nema aktivnih tema.</p>'; }
+      document.getElementById('aiForumFeed').innerHTML = forumHtml;
+
+      // Učitavanje projekata
+      const { data: projekti } = await _supabase.from('INVALID_PROJEKTI').select('*').order('created_at', { ascending: false });
+      let projHtml = '';
+      if (projekti && projekti.length > 0) {
+        projekti.forEach(p => {
+          projHtml += `
+            <div class="post-item">
+              <div class="post-meta">Autor: <b>${escapeHtml(p.autor)}</b></div>
+              <div class="post-title">${escapeHtml(p.naziv)}</div>
+              <div>${escapeHtml(p.opis)}</div>
+            </div>
+          `;
+        });
+      } else { projHtml = '<p>Nema objavljenih projekata.</p>'; }
+      document.getElementById('projektiFeed').innerHTML = projHtml;
+    }
+
+    async function posaljiKomentar(temaId) {
+      const input = document.getElementById(`kom-${temaId}`);
+      const tekst = input.value.trim();
+      if (!tekst) return;
+      await _supabase.from('INVALID_KOMENTARI').insert([{ tema_id: temaId, autor: trenutniKorisnikIme, sadrzaj: tekst }]);
+      input.value = '';
+      ucitajSadrzaje();
+    }
+
+    async function objaviProjekat() {
+      const naziv = document.getElementById('projNaziv').value.trim();
+      const opis = document.getElementById('projOpis').value.trim();
+      if (!naziv || !opis) { alert('Popunite sva polja!'); return; }
+
+      const { error } = await _supabase.from('INVALID_PROJEKTI').insert([{ naziv, opis, autor: trenutniKorisnikIme }]);
+      if (error) { alert('Greška: ' + error.message); }
+      else {
+        document.getElementById('projNaziv').value = '';
+        document.getElementById('projOpis').value = '';
+        alert('Projekat uspješno objavljen!');
+        ucitajSadrzaje();
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    document.addEventListener('DOMContentLoaded', inicijalizacija);
+  </script>
+
+</body>
+</html>
