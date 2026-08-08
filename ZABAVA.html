@@ -23,12 +23,16 @@
     .card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.08); border-top: 6px solid #d90429; display: flex; flex-direction: column; gap: 15px; }
     .card h1, .card h2 { color: #800020; }
 
-    .ai-badge { display: inline-block; background: #ffe3e6; color: #d90429; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; width: fit-content; }
-
     .joke-box { background: #fafafa; padding: 20px; border-radius: 12px; border-left: 4px solid #d90429; font-size: 1.1rem; line-height: 1.6; color: #333; font-style: italic; }
     
     .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; border-radius: 12px; overflow: hidden; background: #000; margin-top: 10px; }
     .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+    .comments-section { margin-top: 15px; background: #fafafa; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .comment-item { background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #eee; font-size: 0.9rem; }
+    .comment-form { display: flex; gap: 10px; margin-top: 5px; }
+    .comment-form input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 0.9rem; }
+    .btn-comment { background: #d90429; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
@@ -46,9 +50,8 @@
   <div class="main-container">
 
     <div class="card">
-      <span class="ai-badge">✨ Groq AI Zabavni Kutak</span>
-      <h1>Dnevni Humor & Smijeh</h1>
-      <p>Svaki drugi dan umjetna inteligencija osvježava naš kutak sa novim šaljivim vicevima o ljubavi i muško-ženskim odnosima.</p>
+      <h1>Dnevni Humor & Vicevi</h1>
+      <p>Sadržaj preuzet iz vaše baze podataka (ZABAVA_VICEVI).</p>
       
       <div id="vicBox" class="joke-box">
         Učitavanje vica...
@@ -56,8 +59,8 @@
     </div>
 
     <div class="card">
-      <h2>🎵 Zabavni YouTube Video Preporuka</h2>
-      <p>Opuštajući muzički ili zabavni klip koji se automatski mijenja svaka dva dana.</p>
+      <h2>🎵 Video Preporuka</h2>
+      <p>Zabavni sadržaj preuzet iz tabele videor.</p>
       
       <div id="videoBox">
         <p style="color: #666;">Učitavanje video preporuke...</p>
@@ -75,85 +78,58 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const GROQ_API_KEY = "Ovdje_unesi_svoj_groq_kljuc"; // Opciono ukoliko želite automatsko Groq generisanje
 
-    async function ucitajZabavu() {
+    async function ucitajZabavuIzBaze() {
       const vicDiv = document.getElementById('vicBox');
       const videoDiv = document.getElementById('videoBox');
 
       try {
-        // Provjeravamo da li već postoji zapis u tabeli ZABAVA za posljednjih 48 sati (svaki drugi dan)
-        const { data: zapisi, error } = await _supabase
-          .from('ZABAVA')
+        // Učitavanje iz ZABAVA_VICEVI
+        const { data: vicevi } = await _supabase
+          .from('ZABAVA_VICEVI')
           .select('*')
-          .order('created_at', { ascending: false })
           .limit(1);
 
-        let trebaNovi = true;
-        let trenutniZapis = null;
+        if (vicevi && vicevi.length > 0) {
+          // Uzimamo prvu kolonu ili tekst koji postoji u tabeli
+          const v = vicevi[0];
+          const tekstVica = v.vic || v.tekst || v.sadrzaj || Object.values(v)[1] || "Ljubav je smijeh i radost! 😊";
+          vicDiv.innerText = `"${tekstVica}"`;
+        } else {
+          vicDiv.innerText = "Zašto se zaljubljeni parovi smiju bez razloga? Zato što su sretni! 😄";
+        }
 
-        if (zapisi && zapisi.length > 0) {
-          const zadnjiDatum = new Date(zapisi[0].created_at);
-          const sada = new Date();
-          const razlikaDana = (sada - zadnjiDatum) / (1000 * 60 * 60 * 24);
+        // Učitavanje iz videor tabele
+        const { data: videi } = await _supabase
+          .from('videor')
+          .select('*')
+          .limit(1);
 
-          // Ako je prošlo manje od 2 dana, koristimo postojeći zapis
-          if (razlikaDana < 2) {
-            trebaNovi = false;
-            trenutniZapis = zapisi[0];
+        let ytUrl = "https://www.youtube.com/embed/jfKfPfyJRdk";
+        if (videi && videi.length > 0) {
+          const vd = videi[0];
+          const urlVal = vd.url || vd.link || Object.values(vd)[2] || "";
+          if (urlVal.includes("watch?v=")) {
+            ytUrl = urlVal.replace("watch?v=", "embed/");
+          } else if (urlVal.startsWith("http")) {
+            ytUrl = urlVal;
           }
-        }
-
-        // Ako je prošlo 2+ dana ili nema zapisa, generišemo novi preko AI ili ubacujemo fallback
-        if (trebaNovi && GROQ_API_KEY && !GROQ_API_KEY.includes("Ovdje")) {
-          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "llama3-70b-8192",
-              messages: [{ role: "user", content: "Napiši jedan duhovit vic o ljubavi ili braku na našem jeziku i pošalji mi validan YouTube embed URL (npr. https://www.youtube.com/embed/dQw4w9WgXcQ). Vrati odgovor u JSON formatu sa poljima 'vic' i 'youtube_url'." }],
-              response_format: { type: "json_object" }
-            })
-          });
-          const data = await res.json();
-          if (data.choices && data.choices[0]) {
-            const parsed = JSON.parse(data.choices[0].message.content);
-            const noviRed = { vic: parsed.vic, youtube_url: parsed.youtube_url };
-            const { data: inserted } = await _supabase.from('ZABAVA').insert([noviRed]).select().maybeSingle();
-            if (inserted) trenutniZapis = inserted;
-          }
-        }
-
-        // Ako nemamo AI, prikazujemo standardne zabavne primjere iz baze ili rezervne
-        if (!trenutniZapis) {
-          trenutniZapis = {
-            vic: "Zašto zaljubljeni parovi drže za ruke u šetnji? Zato što ako puste jedno drugo, odmah kreću u kupovinu! 😄",
-            youtube_url: "https://www.youtube.com/embed/jfKfPfyJRdk" // Oping lofi stream / opuštajuća muzika
-          };
-        }
-
-        vicDiv.innerText = `"${trenutniZapis.vic}"`;
-        
-        // Formatiranje YouTube embed linka
-        let embedUrl = trenutniZapis.youtube_url;
-        if (embedUrl.includes("watch?v=")) {
-          embedUrl = embedUrl.replace("watch?v=", "embed/");
         }
 
         videoDiv.innerHTML = `
           <div class="video-container">
-            <iframe src="${embedUrl}" allowfullscreen></iframe>
+            <iframe src="${ytUrl}" allowfullscreen></iframe>
           </div>
         `;
 
       } catch (e) {
-        console.warn("Greška pri učitavanju zabave:", e);
-        vicDiv.innerText = "Ljubav je jedina stvar koja se uvećava kada se dijeli! 😊";
+        console.warn("Greška:", e);
+        vicDiv.innerText = "Ljubav pokreće svijet! ❤️";
         videoDiv.innerHTML = `<div class="video-container"><iframe src="https://www.youtube.com/embed/jfKfPfyJRdk" allowfullscreen></iframe></div>`;
       }
     }
 
-    document.addEventListener('DOMContentLoaded', ucitajZabavu);
+    document.addEventListener('DOMContentLoaded', ucitajZabavuIzBaze);
   </script>
 
 </body>
