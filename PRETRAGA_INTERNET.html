@@ -73,11 +73,10 @@
         <div class="form-group">
           <label for="platformaSelect">📱 Izaberite Mrežu / Platformu:</label>
           <select id="platformaSelect">
-            <option value="ALL">Sve Mreže (Badoo, Tinder, Bumble, Twoo)</option>
+            <option value="ALL">Sve Mreže (Badoo, Tinder, Bumble)</option>
             <option value="badoo.com">Badoo</option>
             <option value="tinder.com">Tinder</option>
             <option value="bumble.com">Bumble</option>
-            <option value="twoo.com">Twoo</option>
           </select>
         </div>
 
@@ -108,7 +107,6 @@
   </footer>
 
 <script>
-  // VAŠI API PODACI
   const API_KEY = "AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4";
   const SEARCH_ENGINE_ID = "d34bb19acdcc3474c";
 
@@ -128,27 +126,26 @@
     const platforma = document.getElementById('platformaSelect').value;
     const spol = document.getElementById('spolSelect').value;
 
-    let searchTerms = [];
+    let queryParts = [];
 
+    // Pojednostavljen upit da ga Google API sigurno prihvati
     if (platforma !== 'ALL') {
-      searchTerms.push(`site:${platforma}`);
-    } else {
-      searchTerms.push("(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)");
+      queryParts.push(`site:${platforma}`);
     }
 
     if (query) {
-      searchTerms.push(`"${query}"`);
+      queryParts.push(query);
     } else {
-      searchTerms.push("profile");
+      queryParts.push("profil");
     }
 
     if (spol === 'Zensko') {
-      searchTerms.push("(Zensko OR Žensko OR Female OR Woman)");
+      queryParts.push("žensko");
     } else if (spol === 'Musko') {
-      searchTerms.push("(Muško OR Musko OR Male OR Man)");
+      queryParts.push("muško");
     }
 
-    let finalQuery = searchTerms.join(" ");
+    let finalQuery = queryParts.join(" ");
     let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(finalQuery)}&searchType=image`;
 
     const resultsCard = document.getElementById('resultsCard');
@@ -160,6 +157,13 @@
     try {
       let response = await fetch(apiUrl);
       let data = await response.json();
+
+      console.log("Google API Odgovor:", data); // Možete pratiti u konzoli ako bude grešaka
+
+      if (data.error) {
+        container.innerHTML = `<div class="no-results" style="color: red;">API Greška: ${data.error.message}</div>`;
+        return;
+      }
 
       container.innerHTML = '';
 
@@ -173,7 +177,7 @@
           let cardHtml = `
             <div class="result-card">
               <a href="${pageUrl}" target="_blank">
-                <img src="${imageUrl}" class="result-thumb" alt="Slika profila" onerror="this.src='https://via.placeholder.com/220x160?text=Nema+Slika'">
+                <img src="${imageUrl}" class="result-thumb" alt="Slika profila" onerror="this.src='https://via.placeholder.com/220x160?text=Slika+nedostupna'">
               </a>
               <div class="result-body">
                 <a href="${pageUrl}" target="_blank" class="result-title">${title}</a>
@@ -184,11 +188,11 @@
           container.innerHTML += cardHtml;
         });
       } else {
-        container.innerHTML = '<div class="no-results">Nema pronađenih rezultata za ove kriterije.</div>';
+        container.innerHTML = '<div class="no-results">Nema pronađenih rezultata za ove kriterije. Pokušajte unijeti općenitiji pojam.</div>';
       }
     } catch (error) {
       console.error(error);
-      container.innerHTML = '<div class="no-results" style="color: red;">Došlo je do greške prilikom učitavanja API pretrage. Provjerite API ključ.</div>';
+      container.innerHTML = '<div class="no-results" style="color: red;">Došlo je do mrežne greške prilikom učitavanja API pretrage.</div>';
     }
   }
 
