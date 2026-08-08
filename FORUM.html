@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ljubavni Forum | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-nav { background: #fff; color: #d90429; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ffe3e6; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+
+    .forum-header-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.08); border-left: 6px solid #d90429; text-align: center; }
+    .forum-header-card h1 { color: #800020; font-size: 1.8rem; margin-bottom: 8px; }
+    .forum-header-card p { color: #666; font-size: 1rem; }
+
+    .ai-badge { display: inline-block; background: #ffe3e6; color: #d90429; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+
+    .post-card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #ffd1d6; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .post-title { color: #800020; font-size: 1.4rem; font-weight: bold; }
+    .post-content { color: #444; font-size: 1.05rem; line-height: 1.5; }
+    .post-meta { font-size: 0.85rem; color: #888; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+    .comments-section { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; background: #fafafa; padding: 15px; border-radius: 12px; }
+    .comment-item { background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #eee; font-size: 0.95rem; }
+    .comment-author { font-weight: bold; color: #d90429; font-size: 0.85rem; margin-bottom: 2px; }
+
+    .comment-form { display: flex; gap: 10px; margin-top: 5px; }
+    .comment-form input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 0.95rem; }
+    .comment-form input:focus { border-color: #d90429; }
+    .btn-comment { background: #d90429; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn-comment:hover { background: #b50322; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <div class="nav-actions">
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Početna</a>
+      <a href="PROFIL.html" class="btn-nav">👤 Moj Profil</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <div class="forum-header-card">
+      <span class="ai-badge">✨ AI Automatska Sekcija</span>
+      <h1>Ljubavni Forum & Diskusije</h1>
+      <p>Čitajte teme o ljubavi koje generiše umjetna inteligencija i podijelite svoje mišljenje sa zajednicom.</p>
+    </div>
+
+    <div id="forumFeed">
+      <p style="text-align: center; color: #666;">Učitavanje tema sa foruma...</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik (Langlove). Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const GROQ_API_KEY = " Ovdje_unesi_svoj_groq_kljuc "; // Može se povući i iz Supabase Edge funkcije ukoliko ključ ne želite otkrivati u frontendu
+
+    let trenutniKorisnikIme = "Gost";
+
+    async function inicijalizacija() {
+      await dohvatiKorisnika();
+      await provjeriI_GenerisiAiTemu();
+      await ucitajTemeIKomentare();
+    }
+
+    async function dohvatiKorisnika() {
+      const { data: { user } } = await _supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .select('IME')
+          .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
+          .maybeSingle();
+        if (profile && profile.IME) {
+          trenutniKorisnikIme = profile.IME;
+        } else {
+          trenutniKorisnikIme = user.email.split('@')[0];
+        }
+      }
+    }
+
+    // Automatsko generisanje nove teme o ljubavi preko Groq AI ukoliko nema današnjih tema
+    async function provjeriI_GenerisiAiTemu() {
+      try {
+        const { data: postojeceTeme } = await _supabase
+          .from('FORUM_TEME')
+          .select('id, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        const danas = new Date().toISOString().split('T')[0];
+        let trebaNovuTemu = true;
+
+        if (postojeceTeme && postojeceTeme.length > 0) {
+          const datumZadnje = postojeceTeme[0].created_at.split('T')[0];
+          if (datumZadnje === danas) {
+            trebaNovuTemu = false; // Već postoji današnja tema
+          }
+        }
+
+        if (trebaNovuTemu && GROQ_API_KEY && !GROQ_API_KEY.includes("Ovdje")) {
+          const promptTekst = "Napiši zanimljivu i inspirativnu temu za forum o ljubavi, romantičnim vezama ili muško-ženskim odnosima na našem jeziku. Vrati odgovor u JSON formatu sa tačno dva polja: 'naslov' i 'sadrzaj'.";
+          
+          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${GROQ_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "llama3-70b-8192",
+              messages: [{ role: "user", content: promptTekst }],
+              response_format: { type: "json_object" }
+            })
+          });
+
+          const data = await res.json();
+          if (data.choices && data.choices[0]) {
+            const aiOdgovor = JSON.parse(data.choices[0].message.content);
+            await _supabase.from('FORUM_TEME').insert([
+              {
+                naslov: aiOdgovor.naslov,
+                sadrzaj: aiOdgovor.sadrzaj,
+                autor: "Ljubavni AI Asistent ❤️"
+              }
+            ]);
+          }
+        }
+      } catch (e) {
+        console.warn("AI automatska tema greška:", e);
+      }
+    }
+
+    async function ucitajTemeIKomentare() {
+      const feedDiv = document.getElementById('forumFeed');
+      
+      // Dohvatanje tema
+      const { data: teme, error: errTeme } = await _supabase
+        .from('FORUM_TEME')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (errTeme || !teme || teme.length === 0) {
+        feedDiv.innerHTML = '<p style="text-align: center; color: #666;">Trenutno nema aktivnih tema na forumu.</p>';
+        return;
+      }
+
+      // Dohvatanje komentara
+      const { data: komentari } = await _supabase
+        .from('FORUM_KOMENTARI')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      let html = '';
+      teme.forEach(tema => {
+        const datum = new Date(tema.created_at).toLocaleDateString('bs-BA');
+        
+        // Filtriranje komentara za ovu temu
+        const komentariZaTemu = komentari ? komentari.filter(k => k.tema_id === tema.id) : [];
+        
+        let komentariHtml = '';
+        komentariZaTemu.forEach(k => {
+          komentariHtml += `
+            <div class="comment-item">
+              <div class="comment-author">${escapeHtml(k.autor)}</div>
+              <div>${escapeHtml(k.sadrzaj)}</div>
+            </div>
+          `;
+        });
+
+        html += `
+          <div class="post-card">
+            <div class="post-meta">Objavio: <b>${escapeHtml(tema.autor)}</b> | ${datum}</div>
+            <div class="post-title">${escapeHtml(tema.naslov)}</div>
+            <div class="post-content">${escapeHtml(tema.sadrzaj)}</div>
+            
+            <div class="comments-section">
+              <strong>Komentari članova (${komentariZaTemu.length}):</strong>
+              <div id="komentari-list-${tema.id}">
+                ${komentariHtml || '<p style="font-size: 0.85rem; color: #888;">Nema komentara. Budite prvi koji će nešto reći!</p>'}
+              </div>
+              
+              <div class="comment-form">
+                <input type="text" id="input-komentar-${tema.id}" placeholder="Napišite svoj komentar..." />
+                <button class="btn-comment" onclick="posaljiKomentar(${tema.id})">Pošalji</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      feedDiv.innerHTML = html;
+    }
+
+    async function posaljiKomentar(temaId) {
+      const inputEl = document.getElementById(`input-komentar-${temaId}`);
+      const tekstKomentara = inputEl.value.trim();
+
+      if (!tekstKomentara) {
+        alert('Molimo unesite tekst komentara!');
+        return;
+      }
+
+      const { error } = await _supabase.from('FORUM_KOMENTARI').insert([
+        {
+          tema_id: temaId,
+          autor: trenutniKorisnikIme,
+          sadrzaj: tekstKomentara
+        }
+      ]);
+
+      if (error) {
+        alert('Greška pri slanju komentara: ' + error.message);
+      } else {
+        inputEl.value = '';
+        await ucitajTemeIKomentare();
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    document.addEventListener('DOMContentLoaded', inicijalizacija);
+  </script>
+
+</body>
+</html>
