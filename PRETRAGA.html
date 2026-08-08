@@ -33,7 +33,7 @@
     .btn-search { flex: 1; background-color: #d90429; color: #fff; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
     .btn-search:hover { background-color: #b50322; }
 
-    .btn-google { flex: 1; background-color: #4285F4; color: #fff; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    .btn-google { flex: 1; background-color: #4285F4; color: #fff; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center; }
     .btn-google:hover { background-color: #3367d6; }
 
     .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 10px; }
@@ -95,7 +95,7 @@
 
       <div class="btn-actions-wrapper">
         <button class="btn-search" onclick="pretraziBazu()">🔍 Pretraži našu bazu</button>
-        <a href="#" id="googleSearchBtn" class="btn-google" target="_blank">🌐 Pretraži preko Google-a</a>
+        <a href="#" id="googleSearchBtn" class="btn-google" target="_blank" onclick="pripremiGooglePretragu()">🌐 Pretraži preko Google-a</a>
       </div>
     </div>
 
@@ -126,16 +126,12 @@
 
       let query = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
 
-      if (spol) query = query.eq('SPOL', spol);
+      if (spol) query = query.ilike('SPOL', `%${spol}%`);
       if (minGodina) query = query.gte('GODINE', parseInt(minGodina));
       if (maxGodina) query = query.lte('GODINE', parseInt(maxGodina));
-      if (vjera) query = query.eq('VJERA', vjera);
+      if (vjera) query = query.ilike('VJERA', `%${vjera}%`);
 
       const { data: korisnici, error } = await query;
-
-      // Dinamičko kreiranje Google pretrage na osnovu unesenih filtera
-      const googleQueryText = `site:github.io/LANGLOVE.SITE uži izbor ${spol ? 'spol: ' + spol : ''} ${minGodina ? 'od ' + minGodina + ' godina' : ''} ${vjera ? vjera : ''}`;
-      document.getElementById('googleSearchBtn').href = `https://www.google.com/search?q=${encodeURIComponent(googleQueryText)}`;
 
       if (error) {
         resultsDiv.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: red;">Greška pri pretrazi: ${error.message}</p>`;
@@ -143,7 +139,7 @@
       }
 
       if (!korisnici || korisnici.length === 0) {
-        resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Nema pronađenih članova po zadatim kriterijumima.</p>';
+        resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Nema pronađenih članova po zadatim kriterijumima u bazi.</p>';
         return;
       }
 
@@ -153,8 +149,8 @@
         html += `
           <div class="user-tile">
             <img src="${slika}" alt="Slika" class="user-avatar">
-            <h3>${escapeHtml(k.IME || 'Korisnik')} (${k.godine || k.GODINE || 'N/U'})</h3>
-            <p>${escapeHtml(k.JA || k.trazim || 'Nema opisa.')}</p>
+            <h3>${escapeHtml(k.IME || 'Korisnik')} (${k.GODINE || 'N/U'})</h3>
+            <p>${escapeHtml(k.JA || k.TRAZIM || 'Nema opisa.')}</p>
             <div class="user-details">
               Vjera: <b>${escapeHtml(k.VJERA || 'Nije navedeno')}</b><br>
               Telefon: <b>${escapeHtml(k.TELEFON || 'Nije uneseno')}</b>
@@ -164,6 +160,22 @@
       });
 
       resultsDiv.innerHTML = html;
+    }
+
+    function pripremiGooglePretragu() {
+      const spol = document.getElementById('filterSpol').value;
+      const minGodina = document.getElementById('filterMinGodina').value;
+      const maxGodina = document.getElementById('filterMaxGodina').value;
+      const vjera = document.getElementById('filterVjera').value;
+
+      // Čist i prirodan upit za Google pretragu bez restriktivnih operatora
+      let upit = "LjubavNaPrviKlik upoznavanje";
+      if (spol) upit += ` ${spol}`;
+      if (minGodina) upit += ` ${minGodina} godina`;
+      if (vjera) upit += ` ${vjera}`;
+
+      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(upit)}`;
+      document.getElementById('googleSearchBtn').href = googleUrl;
     }
 
     function escapeHtml(text) {
