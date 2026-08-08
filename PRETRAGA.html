@@ -165,16 +165,16 @@
     function pripremiGooglePretragu() {
       const spol = document.getElementById('filterSpol').value;
       const minGodina = document.getElementById('filterMinGodina').value;
-      const maxGodina = document.getElementById('filterMaxGodina').value;
       const vjera = document.getElementById('filterVjera').value;
 
-      // Čist i prirodan upit za Google pretragu bez restriktivnih operatora
-      let upit = "LjubavNaPrviKlik upoznavanje";
+      // Upit usmjeren specifično na fotografije i profile
+      let upit = "LjubavNaPrviKlik profil slika";
       if (spol) upit += ` ${spol}`;
       if (minGodina) upit += ` ${minGodina} godina`;
       if (vjera) upit += ` ${vjera}`;
 
-      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(upit)}`;
+      // Dodatak tbm=isch automatski otvara Google Slike
+      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(upit)}&tbm=isch`;
       document.getElementById('googleSearchBtn').href = googleUrl;
     }
 
