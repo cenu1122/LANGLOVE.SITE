@@ -111,7 +111,7 @@
 
   <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6InF1ZXJ5IiwiaWF0IjoxNzg0ODExMDg0LCJleHAiOjIxMDAzODcwODR9.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -124,42 +124,70 @@
 
       resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Pretraga u toku...</p>';
 
-      let query = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
-
-      if (spol) query = query.ilike('SPOL', `%${spol}%`);
-      if (minGodina) query = query.gte('GODINE', parseInt(minGodina));
-      if (maxGodina) query = query.lte('GODINE', parseInt(maxGodina));
-      if (vjera) query = query.ilike('VJERA', `%${vjera}%`);
-
-      const { data: korisnici, error } = await query;
+      // Prvo uzimamo sve profile iz tabele da budemo fleksibilni
+      let { data: korisnici, error } = await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .select('*');
 
       if (error) {
-        resultsDiv.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: red;">Greška pri pretrazi: ${error.message}</p>`;
+        resultsDiv.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: red;">Greška: ${error.message}</p>`;
         return;
       }
 
       if (!korisnici || korisnici.length === 0) {
-        resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Nema pronađenih članova po zadatim kriterijumima u bazi.</p>';
+        resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Tabela u bazi je trenutno prazna.</p>';
         return;
       }
 
+      // Filtriranje u JavaScript-u (osigurava da pretraga radi bez obzira na velika/mala slova)
+      let filtrirani = korisnici.filter(k => {
+        let matchSpol = true;
+        let matchMin = true;
+        let matchMax = true;
+        let matchVjera = true;
+
+        if (spol) {
+          const kSpol = (k.SPOL || k.spol || "").toString().toLowerCase();
+          if (!kSpol.includes(spol.toLowerCase())) matchSpol = false;
+        }
+
+        const kGodine = parseInt(k.GODINE || k.godine || 0);
+        if (minGodina && kGodine > 0 && kGodine < parseInt(minGodina)) matchMin = false;
+        if (maxGodina && kGodine > 0 && kGodine > parseInt(maxGodina)) matchMax = false;
+
+        if (vjera) {
+          const kVjera = (k.VJERA || k.vjera || "").toString().toLowerCase();
+          if (!kVjera.includes(vjera.toLowerCase())) matchVjera = false;
+        }
+
+        return matchSpol && matchMin && matchMax && matchVjera;
+      });
+
+      // Ako striktni filteri ne nađu ništa, prikazujemo obavještenje ali i sve ostale članove iz baze da se vidi sadržaj
+      if (filtrirani.length === 0) {
+        resultsDiv.innerHTML = `
+          <p style="grid-column: 1/-1; text-align: center; color: #d90429; font-weight: bold;">Nema tačnih poklapanja za ove filtere. Prikazujem sve registrovane članove:</p>
+        `;
+        filtrirani = korisnici; // Prikazaće sve članove da vidiš šta postoji u bazi
+      }
+
       let html = '';
-      korisnici.forEach(k => {
-        const slika = k.SLIKE_URL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(k.IME || 'user')}`;
+      filtrirani.forEach(k => {
+        const slika = k.SLIKE_URL || k.slike_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(k.IME || k.ime || 'user')}`;
         html += `
           <div class="user-tile">
             <img src="${slika}" alt="Slika" class="user-avatar">
-            <h3>${escapeHtml(k.IME || 'Korisnik')} (${k.GODINE || 'N/U'})</h3>
-            <p>${escapeHtml(k.JA || k.TRAZIM || 'Nema opisa.')}</p>
+            <h3>${escapeHtml(k.IME || k.ime || 'Korisnik')} (${k.GODINE || k.godine || 'N/U'})</h3>
+            <p>${escapeHtml(k.JA || k.trazim || 'Nema opisa.')}</p>
             <div class="user-details">
-              Vjera: <b>${escapeHtml(k.VJERA || 'Nije navedeno')}</b><br>
-              Telefon: <b>${escapeHtml(k.TELEFON || 'Nije uneseno')}</b>
+              Vjera: <b>${escapeHtml(k.VJERA || k.vjera || 'Nije navedeno')}</b><br>
+              Telefon: <b>${escapeHtml(k.TELEFON || k.telefon || 'Nije uneseno')}</b>
             </div>
           </div>
         `;
       });
 
-      resultsDiv.innerHTML = html;
+      resultsDiv.innerHTML += html;
     }
 
     function pripremiGooglePretragu() {
@@ -167,13 +195,11 @@
       const minGodina = document.getElementById('filterMinGodina').value;
       const vjera = document.getElementById('filterVjera').value;
 
-      // Upit usmjeren specifično na fotografije i profile
       let upit = "LjubavNaPrviKlik profil slika";
       if (spol) upit += ` ${spol}`;
       if (minGodina) upit += ` ${minGodina} godina`;
       if (vjera) upit += ` ${vjera}`;
 
-      // Dodatak tbm=isch automatski otvara Google Slike
       const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(upit)}&tbm=isch`;
       document.getElementById('googleSearchBtn').href = googleUrl;
     }
