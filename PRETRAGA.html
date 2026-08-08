@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretraga Članova | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-nav { background: #fff; color: #d90429; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ffe3e6; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+
+    .search-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.08); border-top: 6px solid #d90429; display: flex; flex-direction: column; gap: 20px; }
+    .search-card h1 { color: #800020; font-size: 1.8rem; text-align: center; }
+
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-group label { font-weight: 600; font-size: 0.9rem; color: #2b2d42; }
+    .filter-group select, .filter-group input { padding: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.95rem; outline: none; }
+    .filter-group select:focus, .filter-group input:focus { border-color: #d90429; }
+
+    .btn-actions-wrapper { display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap; }
+    .btn-search { flex: 1; background-color: #d90429; color: #fff; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn-search:hover { background-color: #b50322; }
+
+    .btn-google { flex: 1; background-color: #4285F4; color: #fff; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    .btn-google:hover { background-color: #3367d6; }
+
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 10px; }
+    .user-tile { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #ffd1d6; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+    .user-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; background: #ffe3e6; }
+    .user-tile h3 { color: #800020; font-size: 1.2rem; }
+    .user-tile p { font-size: 0.9rem; color: #555; }
+    .user-details { font-size: 0.85rem; color: #777; margin-top: 5px; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <div class="nav-actions">
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
+      <a href="PROFIL.html" class="btn-nav">👤 Moj Profil</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <div class="search-card">
+      <h1>Pretraga Članova</h1>
+      
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label>Spol</label>
+          <select id="filterSpol">
+            <option value="">Svi / Bilo koji</option>
+            <option value="Muško">Muško</option>
+            <option value="Žensko">Žensko</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Minimalne godine</label>
+          <input type="number" id="filterMinGodina" placeholder="Npr. 20" min="18" max="100">
+        </div>
+
+        <div class="filter-group">
+          <label>Maksimalne godine</label>
+          <input type="number" id="filterMaxGodina" placeholder="Npr. 50" min="18" max="100">
+        </div>
+
+        <div class="filter-group">
+          <label>Vjera / Uvjerenje</label>
+          <select id="filterVjera">
+            <option value="">Sve vjere</option>
+            <option value="Islam">Islam</option>
+            <option value="Krscanstvo">Kršćanstvo</option>
+            <option value="Pravoslavlje">Pravoslavlje</option>
+            <option value="Ostalo">Ostalo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-actions-wrapper">
+        <button class="btn-search" onclick="pretraziBazu()">🔍 Pretraži našu bazu</button>
+        <a href="#" id="googleSearchBtn" class="btn-google" target="_blank">🌐 Pretraži preko Google-a</a>
+      </div>
+    </div>
+
+    <div id="rezultatiPretrage" class="results-grid">
+      <p style="grid-column: 1/-1; text-align: center; color: #666;">Izaberite filtere i pokrenite pretragu.</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik (Langlove). Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function pretraziBazu() {
+      const spol = document.getElementById('filterSpol').value;
+      const minGodina = document.getElementById('filterMinGodina').value;
+      const maxGodina = document.getElementById('filterMaxGodina').value;
+      const vjera = document.getElementById('filterVjera').value;
+      const resultsDiv = document.getElementById('rezultatiPretrage');
+
+      resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Pretraga u toku...</p>';
+
+      let query = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
+
+      if (spol) query = query.eq('SPOL', spol);
+      if (minGodina) query = query.gte('GODINE', parseInt(minGodina));
+      if (maxGodina) query = query.lte('GODINE', parseInt(maxGodina));
+      if (vjera) query = query.eq('VJERA', vjera);
+
+      const { data: korisnici, error } = await query;
+
+      // Dinamičko kreiranje Google pretrage na osnovu unesenih filtera
+      const googleQueryText = `site:github.io/LANGLOVE.SITE uži izbor ${spol ? 'spol: ' + spol : ''} ${minGodina ? 'od ' + minGodina + ' godina' : ''} ${vjera ? vjera : ''}`;
+      document.getElementById('googleSearchBtn').href = `https://www.google.com/search?q=${encodeURIComponent(googleQueryText)}`;
+
+      if (error) {
+        resultsDiv.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: red;">Greška pri pretrazi: ${error.message}</p>`;
+        return;
+      }
+
+      if (!korisnici || korisnici.length === 0) {
+        resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Nema pronađenih članova po zadatim kriterijumima.</p>';
+        return;
+      }
+
+      let html = '';
+      korisnici.forEach(k => {
+        const slika = k.SLIKE_URL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(k.IME || 'user')}`;
+        html += `
+          <div class="user-tile">
+            <img src="${slika}" alt="Slika" class="user-avatar">
+            <h3>${escapeHtml(k.IME || 'Korisnik')} (${k.godine || k.GODINE || 'N/U'})</h3>
+            <p>${escapeHtml(k.JA || k.trazim || 'Nema opisa.')}</p>
+            <div class="user-details">
+              Vjera: <b>${escapeHtml(k.VJERA || 'Nije navedeno')}</b><br>
+              Telefon: <b>${escapeHtml(k.TELEFON || 'Nije uneseno')}</b>
+            </div>
+          </div>
+        `;
+      });
+
+      resultsDiv.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+
+</body>
+</html>
