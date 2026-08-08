@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kutak za Zabavu | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-nav { background: #fff; color: #d90429; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ffe3e6; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+
+    .card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.08); border-top: 6px solid #d90429; display: flex; flex-direction: column; gap: 15px; }
+    .card h1, .card h2 { color: #800020; }
+
+    .ai-badge { display: inline-block; background: #ffe3e6; color: #d90429; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; width: fit-content; }
+
+    .joke-box { background: #fafafa; padding: 20px; border-radius: 12px; border-left: 4px solid #d90429; font-size: 1.1rem; line-height: 1.6; color: #333; font-style: italic; }
+    
+    .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; border-radius: 12px; overflow: hidden; background: #000; margin-top: 10px; }
+    .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <div class="nav-actions">
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
+      <a href="PROFIL.html" class="btn-nav">👤 Moj Profil</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <div class="card">
+      <span class="ai-badge">✨ Groq AI Zabavni Kutak</span>
+      <h1>Dnevni Humor & Smijeh</h1>
+      <p>Svaki drugi dan umjetna inteligencija osvježava naš kutak sa novim šaljivim vicevima o ljubavi i muško-ženskim odnosima.</p>
+      
+      <div id="vicBox" class="joke-box">
+        Učitavanje vica...
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎵 Zabavni YouTube Video Preporuka</h2>
+      <p>Opuštajući muzički ili zabavni klip koji se automatski mijenja svaka dva dana.</p>
+      
+      <div id="videoBox">
+        <p style="color: #666;">Učitavanje video preporuke...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik (Langlove). Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const GROQ_API_KEY = "Ovdje_unesi_svoj_groq_kljuc"; // Opciono ukoliko želite automatsko Groq generisanje
+
+    async function ucitajZabavu() {
+      const vicDiv = document.getElementById('vicBox');
+      const videoDiv = document.getElementById('videoBox');
+
+      try {
+        // Provjeravamo da li već postoji zapis u tabeli ZABAVA za posljednjih 48 sati (svaki drugi dan)
+        const { data: zapisi, error } = await _supabase
+          .from('ZABAVA')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        let trebaNovi = true;
+        let trenutniZapis = null;
+
+        if (zapisi && zapisi.length > 0) {
+          const zadnjiDatum = new Date(zapisi[0].created_at);
+          const sada = new Date();
+          const razlikaDana = (sada - zadnjiDatum) / (1000 * 60 * 60 * 24);
+
+          // Ako je prošlo manje od 2 dana, koristimo postojeći zapis
+          if (razlikaDana < 2) {
+            trebaNovi = false;
+            trenutniZapis = zapisi[0];
+          }
+        }
+
+        // Ako je prošlo 2+ dana ili nema zapisa, generišemo novi preko AI ili ubacujemo fallback
+        if (trebaNovi && GROQ_API_KEY && !GROQ_API_KEY.includes("Ovdje")) {
+          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "llama3-70b-8192",
+              messages: [{ role: "user", content: "Napiši jedan duhovit vic o ljubavi ili braku na našem jeziku i pošalji mi validan YouTube embed URL (npr. https://www.youtube.com/embed/dQw4w9WgXcQ). Vrati odgovor u JSON formatu sa poljima 'vic' i 'youtube_url'." }],
+              response_format: { type: "json_object" }
+            })
+          });
+          const data = await res.json();
+          if (data.choices && data.choices[0]) {
+            const parsed = JSON.parse(data.choices[0].message.content);
+            const noviRed = { vic: parsed.vic, youtube_url: parsed.youtube_url };
+            const { data: inserted } = await _supabase.from('ZABAVA').insert([noviRed]).select().maybeSingle();
+            if (inserted) trenutniZapis = inserted;
+          }
+        }
+
+        // Ako nemamo AI, prikazujemo standardne zabavne primjere iz baze ili rezervne
+        if (!trenutniZapis) {
+          trenutniZapis = {
+            vic: "Zašto zaljubljeni parovi drže za ruke u šetnji? Zato što ako puste jedno drugo, odmah kreću u kupovinu! 😄",
+            youtube_url: "https://www.youtube.com/embed/jfKfPfyJRdk" // Oping lofi stream / opuštajuća muzika
+          };
+        }
+
+        vicDiv.innerText = `"${trenutniZapis.vic}"`;
+        
+        // Formatiranje YouTube embed linka
+        let embedUrl = trenutniZapis.youtube_url;
+        if (embedUrl.includes("watch?v=")) {
+          embedUrl = embedUrl.replace("watch?v=", "embed/");
+        }
+
+        videoDiv.innerHTML = `
+          <div class="video-container">
+            <iframe src="${embedUrl}" allowfullscreen></iframe>
+          </div>
+        `;
+
+      } catch (e) {
+        console.warn("Greška pri učitavanju zabave:", e);
+        vicDiv.innerText = "Ljubav je jedina stvar koja se uvećava kada se dijeli! 😊";
+        videoDiv.innerHTML = `<div class="video-container"><iframe src="https://www.youtube.com/embed/jfKfPfyJRdk" allowfullscreen></iframe></div>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', ucitajZabavu);
+  </script>
+
+</body>
+</html>
