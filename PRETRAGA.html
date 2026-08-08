@@ -95,7 +95,7 @@
 
       <div class="btn-actions-wrapper">
         <button class="btn-search" onclick="pretraziBazu()">🔍 Pretraži našu bazu</button>
-        <a href="#" id="googleSearchBtn" class="btn-google" target="_blank" onclick="pripremiGooglePretragu()">🌐 Pretraži preko Google-a</a>
+        <a href="#" id="googleSearchBtn" class="btn-google" target="_blank" onclick="pripremiGooglePretragu()">🌐 Pretraži slike preko Google-a</a>
       </div>
     </div>
 
@@ -111,7 +111,7 @@
 
   <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6InF1ZXJ5IiwiaWF0IjoxNzg0ODExMDg0LCJleHAiOjIxMDAzODcwODR9.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -124,13 +124,12 @@
 
       resultsDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Pretraga u toku...</p>';
 
-      // Prvo uzimamo sve profile iz tabele da budemo fleksibilni
       let { data: korisnici, error } = await _supabase
         .from('UPOZNAVANJ_KORISNICI')
         .select('*');
 
       if (error) {
-        resultsDiv.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: red;">Greška: ${error.message}</p>`;
+        resultsDiv.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: red;">Greška baze: ${error.message}</p>`;
         return;
       }
 
@@ -139,7 +138,6 @@
         return;
       }
 
-      // Filtriranje u JavaScript-u (osigurava da pretraga radi bez obzira na velika/mala slova)
       let filtrirani = korisnici.filter(k => {
         let matchSpol = true;
         let matchMin = true;
@@ -163,12 +161,9 @@
         return matchSpol && matchMin && matchMax && matchVjera;
       });
 
-      // Ako striktni filteri ne nađu ništa, prikazujemo obavještenje ali i sve ostale članove iz baze da se vidi sadržaj
       if (filtrirani.length === 0) {
-        resultsDiv.innerHTML = `
-          <p style="grid-column: 1/-1; text-align: center; color: #d90429; font-weight: bold;">Nema tačnih poklapanja za ove filtere. Prikazujem sve registrovane članove:</p>
-        `;
-        filtrirani = korisnici; // Prikazaće sve članove da vidiš šta postoji u bazi
+        resultsDiv.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #d90429; font-weight: bold;">Nema tačnih poklapanja za ove filtere. Prikazujem sve registrovane članove:</p>`;
+        filtrirani = korisnici;
       }
 
       let html = '';
@@ -178,7 +173,7 @@
           <div class="user-tile">
             <img src="${slika}" alt="Slika" class="user-avatar">
             <h3>${escapeHtml(k.IME || k.ime || 'Korisnik')} (${k.GODINE || k.godine || 'N/U'})</h3>
-            <p>${escapeHtml(k.JA || k.trazim || 'Nema opisa.')}</p>
+            <p>${escapeHtml(k.JA || k.TRAZIM || 'Nema opisa.')}</p>
             <div class="user-details">
               Vjera: <b>${escapeHtml(k.VJERA || k.vjera || 'Nije navedeno')}</b><br>
               Telefon: <b>${escapeHtml(k.TELEFON || k.telefon || 'Nije uneseno')}</b>
