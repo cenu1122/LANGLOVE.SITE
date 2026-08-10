@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat | DocBizHub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #1e293b; display: flex; flex-direction: column; height: 100vh; }
+
+        header { background-color: #0f172a; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .logo { font-size: 1.2rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .btn-back { background: #334155; color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-back:hover { background: #475569; }
+
+        .chat-container { flex: 1; max-width: 900px; width: 100%; margin: 20px auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; }
+
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; }
+        
+        .message-bubble { max-width: 75%; padding: 12px 16px; border-radius: 10px; font-size: 14px; line-height: 1.5; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .message-bubble.incoming { background: #ffffff; color: #1e293b; align-self: flex-start; border: 1px solid #e2e8f0; }
+        .message-bubble.outgoing { background: #3b82f6; color: #ffffff; align-self: flex-end; }
+        
+        .msg-info { font-size: 11px; margin-bottom: 4px; opacity: 0.8; display: flex; justify-content: space-between; gap: 10px; }
+
+        .chat-input-area { padding: 15px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; }
+        .chat-input-area input { flex: 1; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        .chat-input-area input:focus { border-color: #3b82f6; }
+
+        .btn-send { background: #0f172a; color: white; border: none; padding: 12px 22px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+        .btn-send:hover { background: #1e293b; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="DASHBOARD.html" class="logo">⚡ Live Chat (Real-time)</a>
+        <a href="DASHBOARD.html" class="btn-back">🏠 Dashboard</a>
+    </header>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div style="text-align: center; color: #94a3b8; font-size: 13px; margin-top: 20px;">Učitavanje poruka uživo...</div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeypress="handleKey(event)">
+            <button class="btn-send" onclick="posaljiPoruku()">Pošalji 🚀</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+        let _supabase;
+        let korisnikIme = localStorage.getItem('chat_username') || "Korisnik_" + Math.floor(Math.random() * 1000);
+
+        if (typeof supabase !== 'undefined') {
+            _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        async function ucitajPoruke() {
+            if (!_supabase) return;
+            const { data, error } = await _supabase
+                .from('LIVE_CHAT_PORUKE')
+                .select('*')
+                .order('CREATED_AT', { ascending: true })
+                .limit(50);
+
+            if (!error && data) {
+                prikaziPoruke(data);
+            }
+        }
+
+        function prikaziPoruke(poruke) {
+            const container = document.getElementById('chatMessages');
+            let html = '';
+
+            for (let msg of poruke) {
+                const jeMoja = msg.KORISNIK === korisnikIme;
+                html += `
+                    <div class="message-bubble ${jeMoja ? 'outgoing' : 'incoming'}">
+                        <div class="msg-info">
+                            <span><strong>${msg.KORISNIK}</strong></span>
+                            <span>${new Date(msg.CREATED_AT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        <div>${msg.TEKST}</div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function posaljiPoruku() {
+            const input = document.getElementById('msgInput');
+            const tekst = input.value.trim();
+            if (!tekst || !_supabase) return;
+
+            const { error } = await _supabase.from('LIVE_CHAT_PORUKE').insert([
+                { KORISNIK: korisnikIme, TEKST: tekst, CREATED_AT: new Date() }
+            ]);
+
+            if (!error) {
+                input.value = '';
+                ucitajPoruke();
+            }
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') posaljiPoruku();
+        }
+
+        // Automatsko osvježavanje chata svake 3 sekunde
+        setInterval(ucitajPoruke, 3000);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ucitajPoruke();
+        });
+    </script>
+</body>
+</html>
