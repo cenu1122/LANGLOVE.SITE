@@ -522,7 +522,7 @@
         await postaviKorisnikaOnline();
       }, 30000);
 
-      // AUTOMATSKO OSVJEŽAVANJE LISTE KORISNIKA SVAKE 2 MINUTE (120000 ms)
+      // AUTOMATSKO OSVJEŽAVANJE LISTE KORISNIKA SVAKE 2 MINUTE
       setInterval(async () => {
         await ucitajListuKorisnika();
       }, 120000);
@@ -652,7 +652,6 @@
       const onlineBroj = lista.filter(k => provjeriAktivnost(k)).length;
       document.getElementById('onlineCount').innerText = onlineBroj;
 
-      // SORTIRANJE: Od najnovijeg zabilježenog 'last_seen' prema najstarijem
       lista.sort((a, b) => {
         const timeA = a.last_seen ? new Date(a.last_seen).getTime() : 0;
         const timeB = b.last_seen ? new Date(b.last_seen).getTime() : 0;
