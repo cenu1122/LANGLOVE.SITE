@@ -3,27 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Chat & Grupe | DocBizHub</title>
+    <title>Live Chat sa Sigurnim AI Prevodom | DocBizHub</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #1e293b; display: flex; flex-direction: column; height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #1e293b; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        header { background-color: #0f172a; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header { background-color: #0f172a; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); flex-shrink: 0; }
         .logo { font-size: 1.2rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
         .btn-back { background: #334155; color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; transition: background 0.2s; }
         .btn-back:hover { background: #475569; }
 
-        .main-layout { display: flex; flex: 1; max-width: 1200px; width: 100%; margin: 20px auto; gap: 20px; padding: 0 15px; overflow: hidden; }
+        .main-layout { display: flex; flex: 1; max-width: 1300px; width: 100%; margin: 20px auto; gap: 20px; padding: 0 15px; overflow: hidden; }
 
-        /* Sidebar za grupe */
-        .sidebar { width: 280px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .sidebar-header { padding: 15px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
-        .room-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-        .room-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: #334155; transition: background 0.15s; }
+        /* Sidebar sa grupama i članovima */
+        .sidebar { width: 320px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); flex-shrink: 0; }
+        .sidebar-section-title { padding: 10px 15px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; font-weight: bold; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sidebar-section-title:first-child { border-top: none; }
+        
+        .room-list, .member-list { overflow-y: auto; max-height: 160px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+        
+        .room-item { padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155; transition: background 0.15s; }
         .room-item:hover { background: #f1f5f9; }
         .room-item.active { background: #3b82f6; color: white; }
-        .btn-new-room { margin: 10px; padding: 10px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+        
+        .member-item { padding: 6px 10px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; color: #334155; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #10b981; }
+        .status-dot.offline { background: #cbd5e1; }
+        .status-dot.new { background: #f59e0b; }
+
+        .btn-new-room { margin: 8px; padding: 8px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: background 0.2s; }
         .btn-new-room:hover { background: #059669; }
 
         /* Chat prozor */
@@ -35,6 +45,7 @@
         .message-bubble.outgoing { background: #3b82f6; color: #ffffff; align-self: flex-end; }
         
         .msg-info { font-size: 11px; margin-bottom: 4px; opacity: 0.8; display: flex; justify-content: space-between; gap: 10px; }
+        .translated-tag { font-size: 10px; background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
 
         .chat-input-area { padding: 15px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; }
         .chat-input-area input { flex: 1; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
@@ -47,22 +58,41 @@
 <body>
 
     <header>
-        <a href="DASHBOARD.html" class="logo">⚡ Live Chat & Grupe</a>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="DASHBOARD.html" class="logo">⚡ Live Chat & AI Prevod</a>
+            <span id="detectedLangBadge" style="font-size: 12px; background: #1e293b; padding: 4px 10px; border-radius: 12px; color: #38bdf8;">Vaš jezik iz baze: Učitavanje...</span>
+        </div>
         <a href="DASHBOARD.html" class="btn-back">🏠 Dashboard</a>
     </header>
 
     <div class="main-layout">
-        <!-- Sidebar sa grupama -->
+        <!-- Sidebar sa grupama i članovima -->
         <div class="sidebar">
-            <div class="sidebar-header">
-                <span>💬 Sobe i Grupe</span>
-            </div>
+            <div class="sidebar-section-title">💬 Sobe i Grupe</div>
             <div class="room-list" id="roomList">
                 <div class="room-item active" onclick="promijeniSobu('General')"># Generalni Chat</div>
                 <div class="room-item" onclick="promijeniSobu('Inžinjering & Stirling')">⚙️ Inžinjering & Stirling</div>
                 <div class="room-item" onclick="promijeniSobu('Biznis & AI')">📈 Biznis & AI</div>
             </div>
             <button class="btn-new-room" onclick="kreirajNovuGrupu()">+ Nova grupa</button>
+
+            <!-- Gornja zona za nove članove -->
+            <div class="sidebar-section-title" style="background: #fffbeb; color: #b45309;">✨ Novi članovi</div>
+            <div class="member-list" id="noviClanoviList">
+                <div style="font-size: 11px; color: #94a3b8; padding: 4px;">Učitavanje...</div>
+            </div>
+
+            <!-- Online članovi -->
+            <div class="sidebar-section-title" style="color: #059669;">🟢 Online članovi</div>
+            <div class="member-list" id="onlineClanoviList">
+                <div style="font-size: 11px; color: #94a3b8; padding: 4px;">Učitavanje...</div>
+            </div>
+
+            <!-- Offline članovi -->
+            <div class="sidebar-section-title" style="color: #64748b;">⚪ Offline članovi</div>
+            <div class="member-list" id="offlineClanoviList">
+                <div style="font-size: 11px; color: #94a3b8; padding: 4px;">Učitavanje...</div>
+            </div>
         </div>
 
         <!-- Chat dio -->
@@ -72,7 +102,7 @@
             </div>
 
             <div class="chat-input-area">
-                <input type="text" id="msgInput" placeholder="Napišite poruku... (Možete pitati i AI Asistenta)" onkeypress="handleKey(event)">
+                <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeypress="handleKey(event)">
                 <button class="btn-send" onclick="posaljiPoruku()">Pošalji 🚀</button>
             </div>
         </div>
@@ -83,11 +113,34 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
         let _supabase;
-        let korisnikIme = localStorage.getItem('chat_username') || "Korisnik_" + Math.floor(Math.random() * 1000);
+        let korisnikIme = localStorage.getItem('chat_username') || "Korisnik";
+        let mojJezikIzBaze = 'bs';
         let trenutnaSoba = 'General';
 
         if (typeof supabase !== 'undefined') {
             _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        async function dohvatiJezikKorisnika() {
+            if (!_supabase) return;
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (!user) return;
+
+                const { data, error } = await _supabase
+                    .from('UPOZNAVANJ_KORISNICI')
+                    .select('*')
+                    .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
+                    .maybeSingle();
+
+                if (!error && data) {
+                    korisnikIme = data.IME || data.USERNAME || korisnikIme;
+                    mojJezikIzBaze = data.JEZIK || data.language || 'bs';
+                    document.getElementById('detectedLangBadge').innerText = `Vaš jezik iz baze: ${mojJezikIzBaze.toUpperCase()}`;
+                }
+            } catch (e) {
+                console.log("Greška pri dohvatanju jezika iz baze:", e);
+            }
         }
 
         function promijeniSobu(soba) {
@@ -110,6 +163,45 @@
             }
         }
 
+        async function ucitajClanoveSidebar() {
+            if (!_supabase) return;
+            try {
+                const { data, error } = await _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
+                if (error || !data) return;
+
+                const noviList = document.getElementById('noviClanoviList');
+                const onlineList = document.getElementById('onlineClanoviList');
+                const offlineList = document.getElementById('offlineClanoviList');
+
+                let noviHtml = '', onlineHtml = '', offlineHtml = '';
+                const sada = new Date();
+
+                data.forEach(korisnik => {
+                    let ime = korisnik.IME || korisnik.USERNAME || korisnik.MAIL || 'Član';
+                    let datumKreiranja = korisnik.CREATED_AT || korisnik.created_at ? new Date(korisnik.CREATED_AT || korisnik.created_at) : null;
+                    
+                    let jeNovi = false;
+                    if (datumKreiranja) {
+                        let razlikaSati = (sada - datumKreiranja) / (1000 * 60 * 60);
+                        if (razlikaSati <= 48) jeNovi = true;
+                    }
+
+                    let jeOnline = korisnik.is_online === true;
+
+                    if (jeNovi) noviHtml += `<div class="member-item"><span class="status-dot new"></span> ${ime}</div>`;
+                    if (jeOnline) onlineHtml += `<div class="member-item"><span class="status-dot online"></span> ${ime}</div>`;
+                    else offlineHtml += `<div class="member-item"><span class="status-dot offline"></span> ${ime}</div>`;
+                });
+
+                noviList.innerHTML = noviHtml || '<div style="font-size: 11px; color: #94a3b8; padding: 4px;">Nema novih</div>';
+                onlineList.innerHTML = onlineHtml || '<div style="font-size: 11px; color: #94a3b8; padding: 4px;">Nema online</div>';
+                offlineList.innerHTML = offlineHtml || '<div style="font-size: 11px; color: #94a3b8; padding: 4px;">Nema offline</div>';
+
+            } catch (err) {
+                console.error("Greška pri učitavanju članova:", err);
+            }
+        }
+
         async function ucitajPoruke() {
             if (!_supabase) return;
             const { data, error } = await _supabase
@@ -124,14 +216,32 @@
             }
         }
 
-        function prikaziPoruke(poruke) {
+        async function prikaziPoruke(poruke) {
             const container = document.getElementById('chatMessages');
             let html = '';
 
             if (poruke.length === 0) {
-                html = `<div style="text-align: center; color: #94a3b8; font-size: 13px; margin-top: 20px;">Nema poruka u sobi "${trenutnaSoba}". Budite prvi koji će nešto napisati!</div>`;
+                html = `<div style="text-align: center; color: #94a3b8; font-size: 13px; margin-top: 20px;">Nema poruka u sobi "${trenutnaSoba}". Budite prvi!</div>`;
             } else {
                 for (let msg of poruke) {
+                    let tekstZaPrikaz = msg.TEKST;
+                    let jePrevedeno = false;
+
+                    // Siguran poziv Supabase Edge funkcije za prijevod (ključ se nalazi na serveru u Secrets)
+                    if (msg.JEZIK && msg.JEZIK !== mojJezikIzBaze) {
+                        try {
+                            const { data: aiData } = await _supabase.functions.invoke('prevedi-poruku', {
+                                body: { tekst: msg.TEKST, ciljniJezik: mojJezikIzBaze }
+                            });
+                            if (aiData && aiData.prijevod) {
+                                tekstZaPrikaz = aiData.prijevod;
+                                jePrevedeno = true;
+                            }
+                        } catch (err) {
+                            console.warn("Prevod preko Edge funkcije nije uspio:", err);
+                        }
+                    }
+
                     const jeMoja = msg.KORISNIK === korisnikIme;
                     html += `
                         <div class="message-bubble ${jeMoja ? 'outgoing' : 'incoming'}">
@@ -139,7 +249,8 @@
                                 <span><strong>${msg.KORISNIK}</strong></span>
                                 <span>${new Date(msg.CREATED_AT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                             </div>
-                            <div>${msg.TEKST}</div>
+                            <div>${tekstZaPrikaz}</div>
+                            ${jePrevedeno ? `<div class="translated-tag">🌐 Prevod na Vaš jezik</div>` : ''}
                         </div>
                     `;
                 }
@@ -154,50 +265,27 @@
             const tekst = input.value.trim();
             if (!tekst || !_supabase) return;
 
-            // Upisujemo korisnikovu poruku
             const { error } = await _supabase.from('LIVE_CHAT_PORUKE').insert([
-                { KORISNIK: korisnikIme, TEKST: tekst, SOBA: trenutnaSoba, CREATED_AT: new Date() }
+                { KORISNIK: korisnikIme, TEKST: tekst, JEZIK: mojJezikIzBaze, SOBA: trenutnaSoba, CREATED_AT: new Date() }
             ]);
 
             if (!error) {
                 input.value = '';
                 ucitajPoruke();
-
-                // Ako korisnik želi da priča sa AI botom (npr. staviti prefiks "@AI" ili ako je u sobi za Biznis/Inžinjering)
-                if (tekst.startsWith("@AI") || trenutnaSoba.includes("Biznis") || trenutnaSoba.includes("Inžinjering")) {
-                    simulirajOdgovorBotova(tekst);
-                }
             }
-        }
-
-        async function simulirajOdgovorBotova(pitanje) {
-            setTimeout(async () => {
-                let botIme = "🤖 Inžinjer AI";
-                let odgovor = "Zanimljiva ideja! Nastavi razvijati taj koncept.";
-                if (pitanje.toLowerCase().includes("stirling") || trenutnaSoba.includes("Inžinjering")) {
-                    botIme = "⚙️ Stirling Bot";
-                    odgovor = "Za 1 kW Stirling motor obavezno provjeri tolerancije na klipu i efikasnost parabolicnog reflektora!";
-                } else if (pitanje.toLowerCase().includes("biznis") || trenutnaSoba.includes("Biznis")) {
-                    botIme = "📈 Biznis Mentor";
-                    odgovor = "Fokusiraj se na automatizaciju procesa i smanjenje operativnih troškova kroz AI alate.";
-                }
-
-                await _supabase.from('LIVE_CHAT_PORUKE').insert([
-                    { KORISNIK: botIme, TEKST: odgovor, SOBA: trenutnaSoba, CREATED_AT: new Date() }
-                ]);
-                ucitajPoruke();
-            }, 1500);
         }
 
         function handleKey(e) {
             if (e.key === 'Enter') posaljiPoruku();
         }
 
-        // Automatsko osvježavanje svake 3 sekunde
         setInterval(ucitajPoruke, 3000);
+        setInterval(ucitajClanoveSidebar, 10000);
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await dohvatiJezikKorisnika();
             ucitajPoruke();
+            ucitajClanoveSidebar();
         });
     </script>
 </body>
