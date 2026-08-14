@@ -6,14 +6,14 @@
   <title>LjubavNaPrviKlik | Pronađi Svoju Srodnu Dušu</title>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18358301333"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-  gtag('config', 'AW-18358301333');
-  gtag('config', 'G-7LELHW0FEZ');
-</script>
+    gtag('config', 'AW-18358301333');
+    gtag('config', 'G-7LELHW0FEZ');
+  </script>
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -77,6 +77,30 @@
     /* Footer */
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 25px 0; margin-top: 50px; }
 
+    /* SKRIVENO DUGME ZA KOPIRANJE KOMENTARA */
+    #secret-btn {
+        display: none;
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        padding: 15px 25px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 9999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
     @media (max-width: 768px) {
       header { flex-direction: column; gap: 15px; }
       nav ul { flex-wrap: wrap; justify-content: center; gap: 10px; }
@@ -87,6 +111,9 @@
   </style>
 </head>
 <body>
+
+  <!-- SKRIVENO DUGME (Prikazuje se poslije 3 brza klika/tapa bilo gdje) -->
+  <button id="secret-btn" onclick="copyComment()">📋 Kopiraj komentar za langlove.site</button>
 
   <header>
     <a href="#hero" class="logo">❤️ LjubavNaPrviKlik</a>
@@ -207,7 +234,7 @@
   </footer>
 
   <script>
-    // 1. AUTOMATSKO HVATANJE I PAMĆENJE IZVORA KADA NEKO DOĐE PREKO LINKA (npr. ?izvor=viber_grupa)
+    // 1. AUTOMATSKO HVATANJE I PAMĆENJE IZVORA KADA NEKO DOĐE PREKO LINKA
     (function sacuvajDolazniIzvor() {
       const params = new URLSearchParams(window.location.search);
       const izvorIzUrl = params.get('izvor');
@@ -217,6 +244,47 @@
         console.log("Zapamćen dolazni izvor:", izvorIzUrl);
       }
     })();
+
+    // 2. SKRIVENO DUGME - TROSTRUKI TAP BILO GDJE NA EKRANU
+    let clickCount = 0;
+    let lastClickTime = 0;
+
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'secret-btn') return;
+        const currentTime = new Date().getTime();
+        
+        if (currentTime - lastClickTime > 600) {
+            clickCount = 1;
+        } else {
+            clickCount++;
+        }
+        lastClickTime = currentTime;
+
+        // Ako je napravljeno 3 brza klika
+        if (clickCount === 3) {
+            const btn = document.getElementById('secret-btn');
+            btn.style.display = 'block';
+            clickCount = 0;
+            
+            // Automatski sakrij dugme nakon 10 sekundi ako se ne iskoristi
+            setTimeout(() => {
+                btn.style.display = 'none';
+            }, 10000);
+        }
+    });
+
+    // Funkcija za kopiranje komentara za langlove.site
+    function copyComment() {
+        const commentText = "Pozdrav svima! Ako želite istražiti odlične prilike, automatske sisteme i povezivanje, posjetite našu stranicu langlove.site i uvjerite se sami!";
+        
+        navigator.clipboard.writeText(commentText).then(() => {
+            alert("Komentar za langlove.site je uspješno kopiran u memoriju telefona!");
+            document.getElementById('secret-btn').style.display = 'none';
+        }).catch(err => {
+            console.error("Greška pri kopiranju: ", err);
+            alert("Došlo je do greške pri kopiranju teksta.");
+        });
+    }
 
     // Prijevodi stranice
     const translations = {
