@@ -118,6 +118,13 @@
         <p>Opustite se uz zanimljiv sadržaj i ugodno druženje.</p>
       </a>
 
+      <!-- ADMIN KARTICA (Inicijalno sakrivena, prikazuje se samo za admin@gmaill.com) -->
+      <a href="DODAJ_KORISNIKA.html" class="dash-tile" id="adminTile" style="display: none;">
+        <div class="icon">➕</div>
+        <h3>Dodaj Korisnika</h3>
+        <p>Administrativni panel za unos novih članova i Excel bulk upload.</p>
+      </a>
+
     </div>
 
   </div>
@@ -153,6 +160,11 @@
 
         if (user && user.email) {
           document.getElementById('lblUserEmail').innerText = `👤 ${user.email}`;
+
+          // PROVJERA ZA ADMINA: Ako je email admin@gmaill.com, prikaži admin karticu
+          if (user.email.toLowerCase() === 'admin@gmaill.com') {
+            document.getElementById('adminTile').style.display = 'flex';
+          }
 
           const { data: profile } = await _supabase
             .from('UPOZNAVANJ_KORISNICI')
