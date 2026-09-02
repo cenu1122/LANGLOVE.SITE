@@ -118,8 +118,8 @@
         <p>Opustite se uz zanimljiv sadržaj i ugodno druženje.</p>
       </a>
 
-      <!-- ADMIN KARTICA (Prikazuje se automatski za admin nalog) -->
-      <a href="DODAJ_KORISNIKA.html" class="dash-tile" id="adminTile" style="display: none;">
+      <!-- ADMIN KARTICA (Inicijalno vidljiva, skriva se samo ako NIJE admin) -->
+      <a href="DODAJ_KORISNIKA.html" class="dash-tile" id="adminTile">
         <div class="icon">➕</div>
         <h3>Dodaj Korisnika</h3>
         <p>Administrativni panel za unos novih članova i Excel bulk upload.</p>
@@ -146,7 +146,7 @@
 
   <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6InBhbm9uIiwiaWF0IjoxNzg0ODExMDg0LCJleHAiOjIxMDAzODcwODR9.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     let _supabase;
     if (typeof supabase !== 'undefined') {
@@ -162,10 +162,11 @@
         if (user && user.email) {
           document.getElementById('lblUserEmail').innerText = `👤 ${user.email}`;
 
-          // Provjera za admina (otključava karticu)
+          // Provjera za admina: Ako NIJE admin, sakrij karticu. Ako JESTE, ostavi je vidljivom!
           const emailLower = user.email.toLowerCase().trim();
-          if (emailLower === 'admin@gmail.com' || emailLower === 'admin@gmaill.com') {
-            document.getElementById('adminTile').style.display = 'flex';
+          if (emailLower !== 'admin@gmail.com' && emailLower !== 'admin@gmaill.com') {
+            const adminTile = document.getElementById('adminTile');
+            if (adminTile) adminTile.style.display = 'none';
           }
 
           const { data: profile } = await _supabase
@@ -179,6 +180,9 @@
           }
         } else {
           document.getElementById('lblUserEmail').innerText = '👤 Gost / Nije prijavljen';
+          // Ako nije prijavljen, sakrij admin karticu
+          const adminTile = document.getElementById('adminTile');
+          if (adminTile) adminTile.style.display = 'none';
         }
       } catch (e) {
         console.warn("Greška pri dohvaćanju korisnika:", e);
