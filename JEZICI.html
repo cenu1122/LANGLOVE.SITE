@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI PROFESOR | VJEŽBANJE JEZIKA</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f4f6f9;
+      color: #2b2d42;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background-color: #1d2d44;
+      color: #fff;
+      padding: 12px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn-dashboard {
+      background-color: #d90429;
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+
+    .btn-dashboard:hover {
+      background-color: #ef233c;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #fff;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .app-container {
+      flex: 1;
+      max-width: 950px;
+      width: 100%;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .setup-bar {
+      background: #0d1b2a;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .setup-bar select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      font-weight: bold;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .btn-action {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      font-weight: bold;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: #fff;
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-lesson { background: #007bff; }
+    .btn-lesson:hover { background: #0056b3; }
+
+    .btn-chat { background: #28a745; }
+    .btn-chat:hover { background: #218838; }
+
+    .chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background: #f8f9fa;
+    }
+
+    .msg {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .msg.ai {
+      align-self: flex-start;
+      background: #e9ecef;
+      color: #1d2d44;
+      border-left: 5px solid #007bff;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: #007bff;
+      color: #fff;
+    }
+
+    .input-area {
+      padding: 15px;
+      background: #fff;
+      border-top: 1px solid #dee2e6;
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px 18px;
+      border: 1px solid #ced4da;
+      border-radius: 20px;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    .btn-send {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 0 24px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+    }
+
+    /* ADMIN NOTIFIKACIJA OVERLAY */
+    #adminNotificationOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,.92);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+    #adminNotificationOverlay.active { display: flex; }
+    #adminNotificationBox {
+      width: min(900px,95vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 25px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255,255,255,.25);
+      border-top: 10px solid #d90429;
+    }
+    #adminNotificationBox h1 { color: #d90429; font-size: clamp(2rem,5vw,4rem); margin-bottom: 15px; }
+    .admin-notification-type { font-size: 1.5rem; font-weight: bold; color: #2b2d42; margin-bottom: 25px; }
+    .admin-notification-data { background: #f4f4f9; border-radius: 15px; padding: 20px; text-align: left; margin-bottom: 25px; }
+    .admin-notification-row { padding: 12px 5px; border-bottom: 1px solid #ddd; font-size: 1.1rem; word-break: break-word; }
+    .admin-notification-row:last-child { border-bottom: none; }
+    .admin-notification-label { font-weight: bold; color: #2b2d42; margin-right: 8px; }
+    #adminNotificationConfirm {
+      background: #d90429;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 45px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+    #adminNotificationConfirm:hover { background: #b50322; transform: scale(1.03); }
+
+    /* TOAST OBAVJEŠTENJE ZA FORUM (SVI KORISNICI) */
+    #forumToast {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2b2d42;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 12px;
+      z-index: 99999;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      border-left: 5px solid #007bff;
+      max-width: 320px;
+      flex-direction: column;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ADMIN NOTIFIKACIJA OVERLAY -->
+  <div id="adminNotificationOverlay">
+    <div id="adminNotificationBox">
+      <h1>🚨 NOVA NOTIFIKACIJA 🚨</h1>
+      <div class="admin-notification-type" id="adminNotificationType">NOVI UNOS</div>
+      <div class="admin-notification-data">
+        <div class="admin-notification-row"><span class="admin-notification-label">👤 Ime:</span><span id="adminNotificationIme">-</span></div>
+        <div class="admin-notification-row"><span class="admin-notification-label">🏢 Firma:</span><span id="adminNotificationFirma">-</span></div>
+        <div class="admin-notification-row"><span class="admin-notification-label">📞 Telefon:</span><span id="adminNotificationTelefon">-</span></div>
+        <div class="admin-notification-row"><span class="admin-notification-label">✉️ E-mail:</span><span id="adminNotificationEmail">-</span></div>
+        <div class="admin-notification-row"><span class="admin-notification-label">🔗 Link:</span><span id="adminNotificationLink">-</span></div>
+      </div>
+      <button id="adminNotificationConfirm" onclick="zatvoriAdminNotifikaciju()">✅ POTVRDI I ZATVORI</button>
+    </div>
+  </div>
+
+  <!-- TOAST OBAVJEŠTENJE ZA FORUM (SVI KORISNICI) -->
+  <div id="forumToast">
+    <strong id="forumToastTitle" style="font-size: 0.95rem;">💬 Forum obavještenje</strong>
+    <span id="forumToastBody" style="font-size: 0.85rem; color: #dcdde1;">Nova aktivnost na forumu.</span>
+  </div>
+
+  <header>
+    <div class="header-left">
+      <a href="DASHBOARD.html" class="btn-dashboard">⬅ DASHBOARD</a>
+      <a href="DASHBOARD.html" class="logo">🎓 AI PROFESOR - TUTOR ZA JEZIKE</a>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <div class="setup-bar">
+      <label>JEZIK:</label>
+      <select id="learnLang">
+        <option value="ENGLESKI" selected>ENGLESKI</option>
+        <option value="NJEMAČKI">NJEMAČKI</option>
+        <option value="ŠPANSKI">ŠPANSKI</option>
+        <option value="ITALIJANSKI">ITALIJANSKI</option>
+        <option value="FRANCUSKI">FRANCUSKI</option>
+        <option value="TURSKI">TURSKI</option>
+      </select>
+
+      <label>NIVO:</label>
+      <select id="userLevel">
+        <option value="POČETNIK (A1/A2)">POČETNIK (A1/A2)</option>
+        <option value="SREDNJI (B1/B2)">SREDNJI (B1/B2)</option>
+        <option value="NAPREDNI (C1/C2)">NAPREDNI (C1/C2)</option>
+      </select>
+
+      <button class="btn-action btn-lesson" onclick="pokreniAktivnost('LEKCIJA')">🚀 NOVA LEKCIJA</button>
+      <button class="btn-action btn-chat" onclick="pokreniAktivnost('SLOBODAN_RAZGOVOR')">💬 SLOBODAN RAZGOVOR</button>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+      <div class="msg ai">
+        ZDRAVO! ODABERI JEZIK I NIVO IZNAD, PA KLIKNI NA <strong>"🚀 NOVA LEKCIJA"</strong> ILI <strong>"💬 SLOBODAN RAZGOVOR"</strong> DA KRENEMO!
+      </div>
+    </div>
+
+    <div class="chat-input-container input-area">
+      <input type="text" id="userInput" placeholder="NAPIŠITE SVOJ ODGOVOR OVDJE..." onkeypress="if(event.key==='Enter') posaljiOdgovor()">
+      <button class="btn-send" onclick="posaljiOdgovor()">POŠALJI 💬</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+    let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    let trenutniRezim = 'LEKCIJA';
+
+    async function sacuvajUBazu(posiljalac, poruka) {
+      if (!_supabase) return;
+      const jezik = document.getElementById('learnLang').value;
+      const nivo = document.getElementById('userLevel').value;
+      
+      try {
+        await _supabase.rpc('spremac_i_dohvati_poruke_jezika', {
+          p_jezik: jezik,
+          p_nivo: nivo,
+          p_posiljalac: posiljalac,
+          p_poruka: poruka
+        });
+      } catch (err) {
+        console.warn("Nije uspjelo čuvanje u bazu:", err);
+      }
+    }
+
+    async function pokreniAktivnost(rezim) {
+      trenutniRezim = rezim;
+      const jezik = document.getElementById('learnLang').value;
+      const nivo = document.getElementById('userLevel').value;
+      const chatBox = document.getElementById('chatBox');
+
+      if (rezim === 'SLOBODAN_RAZGOVOR') {
+        chatBox.innerHTML = `<div class="msg ai">⏳ SAGOVORNIK POKREĆE NEOBAVEZNI RAZGOVOR NA JEZIKU: ${jezik} (${nivo})...</div>`;
+      } else {
+        chatBox.innerHTML = `<div class="msg ai">⏳ PROFESOR PRIPREMA LEKCIJU ZA JEZIK: ${jezik} (${nivo})...</div>`;
+      }
+
+      let prompt = "";
+      if (rezim === 'SLOBODAN_RAZGOVOR') {
+        prompt = `Ponašaj se kao opušten, prijateljski sagovornik na jeziku ${jezik} za nekoga sa nivoom znanja ${nivo}. 
+        Započni lagan i opušten neobavezni razgovor (npr. o hobijima, vremenu, vikendu ili putovanjima) direktno na jeziku ${jezik}. 
+        Na kraju dodaj kratku rečenicu na bosanskom u zagradi: "(Slobodno mi odgovori na ${jezik}u ili pitaj šta god želiš!)".`;
+      } else {
+        prompt = `Djeluj kao strpljiv i stručan profesor jezika. Pripremi kratku lekciju za jezik: ${jezik} na nivou ${nivo}. 
+        Struktura odgovora:
+        1. Kratko objašnjenje jednog pravila, fraze ili vokabulara (na bosanskom jeziku).
+        2. Daj jedan ili dva primjera.
+        3. Na kraju postavi JEDNO pitanje ili zadatak korisniku na jeziku koji uči (${jezik}) na koje mora odgovoriti.`;
+      }
+
+      try {
+        const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
+          body: { 
+            poruka: prompt, 
+            jezik: jezik,
+            nivo: nivo
+          }
+        });
+
+        if (!error && data && (data.odgovor || data.prijevod || data.result)) {
+          const odgovorText = data.odgovor || data.prijevod || data.result;
+          chatBox.innerHTML = `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
+          sacuvajUBazu('ai_profesor', odgovorText);
+        } else {
+          chatBox.innerHTML = `<div class="msg ai">NISAM USPIO ZAPOČETI AKTIVNOST. POKUŠAJTE PONOVO.</div>`;
+        }
+      } catch (e) {
+        console.error(e);
+        chatBox.innerHTML = `<div class="msg ai">GREŠKA PRI KOMUNIKACIJI SA AI FUNKCIJOM.</div>`;
+      }
+    }
+
+    async function posaljiOdgovor() {
+      const input = document.getElementById('userInput');
+      const tekst = input.value.trim();
+      const jezik = document.getElementById('learnLang').value;
+      const nivo = document.getElementById('userLevel').value;
+      const chatBox = document.getElementById('chatBox');
+
+      if (!tekst) return;
+
+      chatBox.innerHTML += `<div class="msg user">${tekst}</div>`;
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+      sacuvajUBazu('korisnik', tekst);
+
+      const tempAiId = 'loading_' + Date.now();
+      chatBox.innerHTML += `<div class="msg ai" id="${tempAiId}">⏳ ODGOVOR SE PRIPREMA...</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      let promptZaAI = tekst;
+      if (trenutniRezim === 'SLOBODAN_RAZGOVOR') {
+        promptZaAI = `Korisnik uči jezik ${jezik} na nivou ${nivo}. Njegov odgovor/poruka je: "${tekst}". 
+        Odgovori prirodno kao prijatelj u neobaveznom razgovoru na jeziku ${jezik}. Nastavi temu ili predloži novu neobaveznu temu. Ako naprave veliku gramatičku grešku, na samom kraju dodaj kratku i blagu ispravku u zagradi na bosanskom.`;
+      }
+
+      try {
+        const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
+          body: { 
+            poruka: promptZaAI, 
+            jezik: jezik,
+            nivo: nivo
+          }
+        });
+
+        const tempEl = document.getElementById(tempAiId);
+        if (tempEl) tempEl.remove();
+
+        if (!error && data && (data.odgovor || data.prijevod || data.result)) {
+          const odgovorText = data.odgovor || data.prijevod || data.result;
+          chatBox.innerHTML += `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
+          sacuvajUBazu('ai_profesor', odgovorText);
+        } else {
+          chatBox.innerHTML += `<div class="msg ai">GREŠKA U DOBIJANJU ODGOVORA. POKUŠAJTE PONOVO.</div>`;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function pripremiPrikazTeksta(tekst) {
+      return tekst.replace(/\n/g, '<br>');
+    }
+
+    /* ADMIN NOTIFIKACIJE (SAMO ZA ADMINA) */
+    let adminNotificationChannel = null;
+    let adminNotificationIsAdmin = false;
+
+    async function pokreniAdminNotifikacije() {
+      if (!_supabase) return;
+      try {
+        const { data: { user }, error } = await _supabase.auth.getUser();
+        if (error || !user || !user.email) return;
+
+        if (user.email.toLowerCase() !== 'admin@gmail.com') return;
+
+        adminNotificationIsAdmin = true;
+
+        if (adminNotificationChannel) {
+          await _supabase.removeChannel(adminNotificationChannel);
+        }
+
+        adminNotificationChannel = _supabase.channel('admin-notifikacije-kanal')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'NOTIFIKACIJE' }, function(payload) {
+            prikaziAdminNotifikaciju(payload.new);
+          })
+          .subscribe();
+      } catch (err) {
+        console.error('Greška admin notifikacija:', err);
+      }
+    }
+
+    function prikaziAdminNotifikaciju(n) {
+      if (!adminNotificationIsAdmin) return;
+      document.getElementById('adminNotificationType').textContent = n.VRSTA_NOTIFIKACIJE || 'NOVI UNOS';
+      document.getElementById('adminNotificationIme').textContent = n.IME || '-';
+      document.getElementById('adminNotificationFirma').textContent = n.FIRMA || '-';
+      document.getElementById('adminNotificationTelefon').textContent = n.TELEFON || '-';
+      document.getElementById('adminNotificationEmail').textContent = n.EMAIL || '-';
+      document.getElementById('adminNotificationLink').textContent = n.LINK_STRANICE || '-';
+      document.getElementById('adminNotificationOverlay').classList.add('active');
+      pustiAdminAlarm();
+    }
+
+    function zatvoriAdminNotifikaciju() {
+      document.getElementById('adminNotificationOverlay').classList.remove('active');
+    }
+
+    /* NOTIFIKACIJE ZA FORUM (SVI KORISNICI) */
+    function pokreniForumNotifikacije() {
+      if (!_supabase) return;
+      
+      _supabase.channel('forum-global-kanal')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_POSTOVI' }, function(payload) {
+          prikaziForumToast("🗣️ Nova tema na forumu!", "Kreirana je nova diskusija. Pogledajte detalje.");
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_KOMENTARI' }, function(payload) {
+          prikaziForumToast("💬 Novi komentar", "Neko je ostavio novi komentar na forumu.");
+        })
+        .subscribe();
+    }
+
+    function prikaziForumToast(naslov, poruka) {
+      const toast = document.getElementById('forumToast');
+      document.getElementById('forumToastTitle').innerText = naslov;
+      document.getElementById('forumToastBody').innerText = poruka;
+      toast.style.display = 'flex';
+      setTimeout(() => { toast.style.display = 'none'; }, 6000);
+    }
+
+    /* ZVUČNI ALARM */
+    function pustiAdminAlarm() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.setValueAtTime(660, ctx.currentTime + 0.2);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.6);
+      } catch (e) {
+        console.warn('Alarm nije pokrenut:', e);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      pokreniAdminNotifikacije();
+      pokreniForumNotifikacije();
+    });
+  </script>
+
+</body>
+</html>
