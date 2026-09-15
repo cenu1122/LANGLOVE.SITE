@@ -38,6 +38,12 @@
     .dash-tile h3 { color: #800020; font-size: 1.2rem; }
     .dash-tile p { font-size: 0.85rem; color: #777; }
 
+    /* Poseban istaknuti stil za izdvojenu karticu učenja jezika da bude još uočljivija gore */
+    .dash-tile.featured {
+      background: linear-gradient(135deg, #fff0f3 0%, #ffffff 100%);
+      border: 2px solid #d90429;
+    }
+
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
 </head>
@@ -70,6 +76,13 @@
 
     <div class="dashboard-grid">
       
+      <!-- IZDVOJENO NA SAMOM VRHU PRVA GORE -->
+      <a href="JEZICI.html" class="dash-tile featured">
+        <div class="icon">🎓</div>
+        <h3>Učenje Jezika</h3>
+        <p>Usavršite strane jezike uz AI profesora i C1 profesionalce.</p>
+      </a>
+
       <a href="PROFIL.html" class="dash-tile">
         <div class="icon">👤</div>
         <h3>Moj Profil</h3>
