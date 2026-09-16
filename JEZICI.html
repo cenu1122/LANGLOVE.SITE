@@ -161,6 +161,38 @@
     }
     .btn-audio:hover { background: #0d1b2a; }
 
+    /* SEKCIJA SA UPUTSTVIMA I LINKOVIMA NA STRANICI */
+    .info-docs-section {
+      background: #eef2f7;
+      border-top: 1px solid #d1d5db;
+      padding: 15px 20px;
+      font-size: 0.85rem;
+      color: #334155;
+    }
+    .info-docs-section h4 {
+      margin-bottom: 6px;
+      color: #1d2d44;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+    .info-docs-section p {
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .info-docs-links {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .info-docs-links a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .info-docs-links a:hover {
+      text-decoration: underline;
+    }
+
     .input-area {
       padding: 15px;
       background: #fff;
@@ -339,6 +371,18 @@
       </div>
     </div>
 
+    <!-- DODANA SEKCIJA SA UPUTSTVIMA I LINKOVIMA DIREKTNO NA STRANICI -->
+    <div class="info-docs-section">
+      <h4>ℹ️ Kako funkcioniše sistem izgovora i glasa:</h4>
+      <p>Sistem automatski generiše zvuk rečenica i kešira pojedinačne riječi u pozadini. Klikom na mikrofon (🎤) možete govoriti na izabranom jeziku.</p>
+      <div class="info-docs-links">
+        <a href="https://supabase.com/dashboard" target="_blank">📊 Supabase Baza (RIJECI_IZGOVOR)</a>
+        <a href="https://supabase.com/dashboard" target="_blank">📁 Supabase Storage (audio-fajlovi)</a>
+        <a href="https://supabase.com/dashboard" target="_blank">⚡ Supabase Edge Functions</a>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition" target="_blank">🌐 Web Speech API Dokumentacija</a>
+      </div>
+    </div>
+
     <div class="chat-input-container input-area">
       <button class="btn-mic" id="micBtn" onclick="toggleSpeechRecognition()" title="Govori mikrofonu">🎤</button>
       <input type="text" id="userInput" placeholder="NAPIŠITE SVOJ ODGOVOR OVDJE..." onkeypress="if(event.key==='Enter') posaljiOdgovor()">
@@ -404,7 +448,6 @@
       const input = document.getElementById('userInput');
       const jezik = document.getElementById('learnLang').value;
 
-      // Mapiranje jezika za prepoznavanje govora
       const langMap = {
         "ENGLESKI": "en-US",
         "NJEMAČKI": "de-DE",
@@ -494,13 +537,13 @@
 
         if (!error && data && (data.odgovor || data.prijevod || data.result)) {
           const odgovorText = data.odgovor || data.prijevod || data.result;
+          const safeText = odgovorText.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
           chatBox.innerHTML = `
             <div class="msg ai">
               <div>${pripremiPrikazTeksta(odgovorText)}</div>
-              <button class="btn-audio" onclick="izgovoriTekst(this.dataset.text)" data-text="${encodeURIComponent(odgovorText)}">🔊 POSLUŠAJ IZGOVOR</button>
+              <button class="btn-audio" onclick="izgovoriTekst('${safeText}')">🔊 POSLUŠAJ IZGOVOR</button>
             </div>`;
           sacuvajUBazu('ai_profesor', odgovorText);
-          izgovoriTekst(odgovorText); // Automatski izgovori poruku
         } else {
           chatBox.innerHTML = `<div class="msg ai">NISAM USPIO ZAPOČETI AKTIVNOST. POKUŠAJTE PONOVO.</div>`;
         }
@@ -548,13 +591,13 @@
 
         if (!error && data && (data.odgovor || data.prijevod || data.result)) {
           const odgovorText = data.odgovor || data.prijevod || data.result;
+          const safeText = odgovorText.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
           chatBox.innerHTML += `
             <div class="msg ai">
               <div>${pripremiPrikazTeksta(odgovorText)}</div>
-              <button class="btn-audio" onclick="izgovoriTekst(this.dataset.text)" data-text="${encodeURIComponent(odgovorText)}">🔊 POSLUŠAJ IZGOVOR</button>
+              <button class="btn-audio" onclick="izgovoriTekst('${safeText}')">🔊 POSLUŠAJ IZGOVOR</button>
             </div>`;
           sacuvajUBazu('ai_profesor', odgovorText);
-          izgovoriTekst(odgovorText); // Automatski izgovori odgovor
         } else {
           chatBox.innerHTML += `<div class="msg ai">GREŠKA U DOBIJANJU ODGOVORA. POKUŠAJTE PONOVO.</div>`;
         }
@@ -565,7 +608,7 @@
     }
 
     function pripremiPrikazTeksta(tekst) {
-      return decodeURIComponent(tekst).replace(/\n/g, '<br>');
+      return tekst.replace(/\n/g, '<br>');
     }
 
     /* ADMIN NOTIFIKACIJE */
