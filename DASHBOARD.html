@@ -1,80 +1,64 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-
-const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY') || '';
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  // Obrada CORS zahtjeva
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const { poruka, jezik, nivo } = await req.json();
-
-    // 1. Autorizacija korisnika preko Supabase zaglavlja
-    const authHeader = req.headers.get('Authorization');
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // SYSTEM PROMPT - Instrukcije za Groq AI
-    const systemPrompt = `
-Ti si prijateljski AI sagovornik i profesor koji pomaže korisniku da nauči jezik: ${jezik} (Nivo znanja: ${nivo}).
-
-Tvoja pravila ponašanja:
-1. Odgovaraj ISKLJUČIVO na jeziku koji korisnik uči (${jezik}).
-2. Prilagodi složenost vokabulara nivou (${nivo}).
-3. Budi prirodan sagovornik: odgovori na korisnikovo pitanje ili komentar.
-4. Ako korisnik napravi veću gramatičku grešku, na kraju odgovora u novom redu daj KRATKU i blagu ispravku u zagradi na Bosanskom jeziku.
-5. UVIJEK završi svoj odgovor novim pitanjem ili predlogom nove teme kako bi razgovor nastavio teći!
-`;
-
-    // 2. Poziv prema Groq API-ju sa novim aktivnim modelom
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'openai/gpt-oss-120b',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: poruka }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
-    });
-
-    const groqData = await groqResponse.json();
-    const aiOdgovor = groqData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
-
-    // 3. Vraćamo AI odgovor nazad na frontend
-    return new Response(
-      JSON.stringify({ 
-        odgovor: aiOdgovor,
-        status: 'success' 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
-
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
-      }
-    );
-  }
-});
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - DocBizHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0056b3;
+            margin-top: 0;
+        }
+        .nav-links {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .nav-links a {
+            display: block;
+            padding: 12px 15px;
+            background: #0056b3;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dobrodošli na DocBizHub Dashboard</h1>
+        <p>Ovo je centralna kontrolna tabla za upravljanje vašim alatima, panelima i sadržajem.</p>
+        
+        <div class="nav-links">
+            <a href="FORUM.html">Forum</a>
+            <a href="POSAO.html">Posao</a>
+            <a href="PORUKE.html">Poruke</a>
+            <a href="ZABAVA.html">Zabava</a>
+            <a href="JEZICI.html">Jezici</a>
+            <a href="PROFIL.html">Profil</a>
+            <a href="KONTAKT.html">Kontakt</a>
+        </div>
+    </div>
+</body>
+</html>
