@@ -3,62 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - DocBizHub</title>
+    <title>LANGLOVE - Pronađi svoju ljubav</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
+        * {
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        h1 {
-            color: #0056b3;
-            margin-top: 0;
+
+        /* Navigacija */
+        header {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .nav-links {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .nav-links a {
-            display: block;
-            padding: 12px 15px;
-            background: #0056b3;
-            color: #fff;
-            text-align: center;
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        nav a {
+            color: white;
             text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
+            font-weight: 600;
+            transition: opacity 0.2s;
         }
-        .nav-links a:hover {
-            background: #004085;
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)), url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80') center/cover;
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .hero h1 {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto 25px auto;
+            color: #cbd5e1;
+        }
+
+        .btn-primary {
+            background-color: #e11d48;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #be123c;
+            transform: translateY(-2px);
+        }
+
+        /* Main sadržaj & Profili */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #0f172a;
+        }
+
+        .profiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            padding: 20px;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-location {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-like {
+            flex: 1;
+            background-color: #ffe4e6;
+            color: #e11d48;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-like:hover {
+            background-color: #e11d48;
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 25px;
+            margin-top: 50px;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: #e11d48;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Dobrodošli na DocBizHub Dashboard</h1>
-        <p>Ovo je centralna kontrolna tabla za upravljanje vašim alatima, panelima i sadržajem.</p>
-        
-        <div class="nav-links">
-            <a href="FORUM.html">Forum</a>
-            <a href="POSAO.html">Posao</a>
-            <a href="PORUKE.html">Poruke</a>
-            <a href="ZABAVA.html">Zabava</a>
-            <a href="JEZICI.html">Jezici</a>
-            <a href="PROFIL.html">Profil</a>
-            <a href="KONTAKT.html">Kontakt</a>
+
+    <!-- Navigacija -->
+    <header>
+        <div class="logo">
+            ❤️ LANGLOVE
         </div>
-    </div>
+        <nav>
+            <ul>
+                <li><a href="#">Početna</a></li>
+                <li><a href="#">Istraži</a></li>
+                <li><a href="#">Poruke</a></li>
+                <li><a href="#">Moj Profil</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero dio -->
+    <section class="hero">
+        <h1>Upoznaj nove ljude u svojoj blizini</h1>
+        <p>Spoji se s osobama sličnih interesa, započni razgovor i pronađi idealnog partnera na LANGLOVE platformi.</p>
+        <button class="btn-primary" onclick="alert('Registracija uskoro dostupna!')">Pridruži se odmah</button>
+    </section>
+
+    <!-- Prikaz Profila -->
+    <main class="container">
+        <h2 class="section-title">Preporučeni profili</h2>
+
+        <div class="profiles-grid">
+            
+            <!-- Profil 1 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80" alt="Ana" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">
+                        Ana, 24
+                    </div>
+                    <div class="profile-location">📍 Sarajevo, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Ana')">❤️ Sviđa mi se</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profil 2 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" alt="Marko" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">
+                        Marko, 28
+                    </div>
+                    <div class="profile-location">📍 Mostar, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Marko')">❤️ Sviđa mi se</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profil 3 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" alt="Ema" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">
+                        Ema, 22
+                    </div>
+                    <div class="profile-location">📍 Banja Luka, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Ema')">❤️ Sviđa mi se</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profil 4 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" alt="Tuzla" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">
+                        Haris, 26
+                    </div>
+                    <div class="profile-location">📍 Tuzla, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Haris')">❤️ Sviđa mi se</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 <a href="#">LANGLOVE.SITE</a>. Sva prava zadržana.</p>
+    </footer>
+
+    <script>
+        function likeProfile(name) {
+            alert('Poslali ste lajk korisniku ' + name + '!');
+        }
+    </script>
 </body>
 </html>
