@@ -18,6 +18,25 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            top: 0 !important; /* Spriječava pomjeranje stranice zbog Google Translate trake */
+        }
+
+        /* Google Translate skriva standardnu ružnu traku */
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+        .goog-te-gadget-icon {
+            display: none !important;
+        }
+        .goog-te-gadget-simple {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            font-size: 14px !important;
+            color: white !important;
+        }
+        .goog-te-gadget-simple span {
+            color: white !important;
         }
 
         /* Navigacija */
@@ -32,6 +51,8 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .logo {
@@ -47,6 +68,7 @@
             display: flex;
             list-style: none;
             gap: 20px;
+            align-items: center;
         }
 
         nav a {
@@ -58,6 +80,41 @@
 
         nav a:hover {
             opacity: 0.8;
+        }
+
+        /* Traka za selekciju jezika i filter */
+        .lang-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .lang-picker-container input {
+            border: none;
+            outline: none;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            width: 110px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+        }
+
+        .lang-picker-container select {
+            border: none;
+            outline: none;
+            background: white;
+            color: #0f172a;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            max-width: 150px;
         }
 
         /* Hero Banner */
@@ -145,9 +202,6 @@
             font-size: 20px;
             font-weight: 700;
             margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .profile-location {
@@ -196,11 +250,77 @@
 </head>
 <body>
 
+    <!-- Skriveni Google Translate Element -->
+    <div id="google_translate_element" style="display:none;"></div>
+
     <!-- Navigacija -->
     <header>
         <div class="logo">
             ❤️ LANGLOVE
         </div>
+
+        <!-- Pretraživač i Birač Jezika -->
+        <div class="lang-picker-container">
+            <span>🌐</span>
+            <input type="text" id="lang-filter" placeholder="Traži jezik..." onkeyup="filterLanguages()">
+            <select id="custom-language-select" onchange="translatePage(this.value)">
+                <!-- Glavni jezici na vrhu -->
+                <optgroup label="Glavni jezici / Main languages">
+                    <option value="bs">Bosanski / Hrvatski / Srpski</option>
+                    <option value="en">English (Engleski)</option>
+                    <option value="de">Deutsch (Njemački)</option>
+                    <option value="fr">Français (Francuski)</option>
+                    <option value="es">Español (Španski)</option>
+                    <option value="it">Italiano (Italijanski)</option>
+                    <option value="ru">Русский (Ruski)</option>
+                    <option value="tr">Türkçe (Turski)</option>
+                    <option value="ar">العربية (Arapski)</option>
+                    <option value="zh-CN">中文 (Kineski)</option>
+                </optgroup>
+                <!-- Svi ostali svjetski jezici -->
+                <optgroup label="Svi ostali jezici / All languages">
+                    <option value="sq">Shqip (Albanski)</option>
+                    <option value="hy">Հայերեն (Armenski)</option>
+                    <option value="az">Azərbaycan (Azerbejdžanski)</option>
+                    <option value="eu">Euskara (Baskijski)</option>
+                    <option value="be">Belaruskaya (Bjeloruski)</option>
+                    <option value="bg">Български (Bugarski)</option>
+                    <option value="ca">Català (Katalonski)</option>
+                    <option value="cs">Čeština (Češki)</option>
+                    <option value="da">Dansk (Danski)</option>
+                    <option value="nl">Nederlands (Holandski)</option>
+                    <option value="et">Eesti (Estonski)</option>
+                    <option value="fi">Suomi (Finski)</option>
+                    <option value="gl">Galego (Galicijski)</option>
+                    <option value="ka">ქართული (Gruzijski)</option>
+                    <option value="el">Ελληνικά (Grčki)</option>
+                    <option value="he">עברית (Hebrejski)</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="hu">Magyar (Mađarski)</option>
+                    <option value="is">Íslenska (Islandski)</option>
+                    <option value="id">Bahasa Indonesia (Indonezijski)</option>
+                    <option value="ga">Gaeilge (Irski)</option>
+                    <option value="ja">日本語 (Japanski)</option>
+                    <option value="ko">한국어 (Korejski)</option>
+                    <option value="lv">Latviešu (Letonski)</option>
+                    <option value="lt">Lietuvių (Litvanski)</option>
+                    <option value="mk">Македонски (Makedonski)</option>
+                    <option value="ms">Bahasa Melayu (Malajski)</option>
+                    <option value="no">Norsk (Norveški)</option>
+                    <option value="fa">فارسی (Persijski)</option>
+                    <option value="pl">Polski (Poljski)</option>
+                    <option value="pt">Português (Portugalski)</option>
+                    <option value="ro">Română (Rumunski)</option>
+                    <option value="sk">Slovenčina (Slovački)</option>
+                    <option value="sl">Slovenščina (Slovenački)</option>
+                    <option value="sv">Svenska (Švedski)</option>
+                    <option value="th">ไทย (Tajlandski)</option>
+                    <option value="uk">Українська (Ukrajinski)</option>
+                    <option value="vi">Tiếng Việt (Vijetnamski)</option>
+                </optgroup>
+            </select>
+        </div>
+
         <nav>
             <ul>
                 <li><a href="#">Početna</a></li>
@@ -223,14 +343,11 @@
         <h2 class="section-title">Preporučeni profili</h2>
 
         <div class="profiles-grid">
-            
             <!-- Profil 1 -->
             <div class="profile-card">
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80" alt="Ana" class="profile-img">
                 <div class="profile-info">
-                    <div class="profile-name">
-                        Ana, 24
-                    </div>
+                    <div class="profile-name">Ana, 24</div>
                     <div class="profile-location">📍 Sarajevo, BiH</div>
                     <div class="profile-actions">
                         <button class="btn-like" onclick="likeProfile('Ana')">❤️ Sviđa mi se</button>
@@ -242,9 +359,7 @@
             <div class="profile-card">
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" alt="Marko" class="profile-img">
                 <div class="profile-info">
-                    <div class="profile-name">
-                        Marko, 28
-                    </div>
+                    <div class="profile-name">Marko, 28</div>
                     <div class="profile-location">📍 Mostar, BiH</div>
                     <div class="profile-actions">
                         <button class="btn-like" onclick="likeProfile('Marko')">❤️ Sviđa mi se</button>
@@ -256,9 +371,7 @@
             <div class="profile-card">
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" alt="Ema" class="profile-img">
                 <div class="profile-info">
-                    <div class="profile-name">
-                        Ema, 22
-                    </div>
+                    <div class="profile-name">Ema, 22</div>
                     <div class="profile-location">📍 Banja Luka, BiH</div>
                     <div class="profile-actions">
                         <button class="btn-like" onclick="likeProfile('Ema')">❤️ Sviđa mi se</button>
@@ -268,18 +381,15 @@
 
             <!-- Profil 4 -->
             <div class="profile-card">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" alt="Tuzla" class="profile-img">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" alt="Haris" class="profile-img">
                 <div class="profile-info">
-                    <div class="profile-name">
-                        Haris, 26
-                    </div>
+                    <div class="profile-name">Haris, 26</div>
                     <div class="profile-location">📍 Tuzla, BiH</div>
                     <div class="profile-actions">
                         <button class="btn-like" onclick="likeProfile('Haris')">❤️ Sviđa mi se</button>
                     </div>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -288,10 +398,46 @@
         <p>&copy; 2026 <a href="#">LANGLOVE.SITE</a>. Sva prava zadržana.</p>
     </footer>
 
-    <script>
+    <!-- Google Translate Skripta -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'bs',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        // Funkcija za pokretanje automatskog prevođenja
+        function translatePage(langCode) {
+            var select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.value = langCode;
+                select.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // Funkcija za pretragu/filtriranje jezika u listi
+        function filterLanguages() {
+            var input = document.getElementById('lang-filter');
+            var filter = input.value.toLowerCase();
+            var select = document.getElementById('custom-language-select');
+            var options = select.getElementsByTagName('option');
+
+            for (var i = 0; i < options.length; i++) {
+                var txtValue = options[i].textContent || options[i].innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    options[i].style.display = "";
+                } else {
+                    options[i].style.display = "none";
+                }
+            }
+        }
+
         function likeProfile(name) {
             alert('Poslali ste lajk korisniku ' + name + '!');
         }
     </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
