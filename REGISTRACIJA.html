@@ -28,8 +28,9 @@
 
     .btn-submit { width: 100%; background-color: #d90429; color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
     .btn-submit:hover { background-color: #ef233c; }
+    .btn-submit:disabled { background-color: #94a3b8; cursor: not-allowed; }
 
-    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
+    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; padding: 10px; border-radius: 8px; }
     .footer-links { text-align: center; margin-top: 20px; font-size: 0.95rem; }
     .footer-links a { color: #d90429; text-decoration: none; font-weight: bold; }
 
@@ -47,7 +48,7 @@
       <h2>Napravi Profil</h2>
       <p class="subtitle">Pronađi nekog posebnog već danas</p>
 
-     <form id="registerForm">
+      <form id="registerForm">
         <div class="form-group">
           <label>Nadimak / Ime za prikaz *</label>
           <input type="text" id="ime" placeholder="Npr. Ana Anić" required>
@@ -109,9 +110,8 @@
           <input type="file" id="slikaFile" accept="image/*" required>
         </div>
 
-        <button type="button" class="btn-submit" id="regBtn" onclick="handleRegister()">REGISTRUJ SE</button>
-</form>
-      </div>
+        <button type="submit" class="btn-submit" id="regBtn">REGISTRUJ SE</button>
+      </form>
 
       <div id="statusMessage"></div>
 
@@ -131,7 +131,12 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function handleRegister() {
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault(); // Sprečava automatsko osvježavanje stranice
+
+      const statusDiv = document.getElementById('statusMessage');
+      const regBtn = document.getElementById('regBtn');
+
       const ime = document.getElementById('ime').value.trim();
       const godine = document.getElementById('godine').value.trim();
       const email = document.getElementById('email').value.trim();
@@ -144,44 +149,50 @@
       const trazim = document.getElementById('trazim').value.trim();
       const fileInput = document.getElementById('slikaFile');
 
-      const statusDiv = document.getElementById('statusMessage');
-      const regBtn = document.getElementById('regBtn');
-
       if (!ime || !godine || !email || !password || !telefon || !facebook || !linkedin || !vjera || !ja || !trazim || fileInput.files.length === 0) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Molimo popunite sva polja i odaberite sliku!';
+        statusDiv.style.color = '#d90429';
+        statusDiv.style.backgroundColor = '#ffe5e9';
+        statusDiv.textContent = '⚠️ Molimo popunite sva polja i odaberite sliku!';
         return;
       }
 
       if (parseInt(godine) < 18) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Morate imati najmanje 18 godina za registraciju!';
+        statusDiv.style.color = '#d90429';
+        statusDiv.style.backgroundColor = '#ffe5e9';
+        statusDiv.textContent = '⚠️ Morate imati najmanje 18 godina za registraciju!';
         return;
       }
 
       if (password.length < 6) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Lozinka mora imati najmanje 6 znakova!';
+        statusDiv.style.color = '#d90429';
+        statusDiv.style.backgroundColor = '#ffe5e9';
+        statusDiv.textContent = '⚠️ Lozinka mora imati najmanje 6 znakova!';
         return;
       }
 
       const dolazniIzvor = localStorage.getItem('dolazni_izvor') || 'direktno';
 
       statusDiv.style.color = '#0056b3';
+      statusDiv.style.backgroundColor = '#e0f2fe';
+      statusDiv.textContent = '⏳ Kreiranje korisničkog naloga...';
       regBtn.disabled = true;
 
       try {
-        statusDiv.textContent = 'Kreiranje korisničkog naloga...';
-
         // 1. Kreiranje Auth korisnika
         const { data: authData, error: authError } = await _supabase.auth.signUp({
           email: email,
           password: password
         });
 
-        if (authError) throw authError;
+        if (authError) {
+          // Provjera specifičnih grešaka od Supabase-a da budu jasne korisniku
+          if (authError.message.includes('already registered') || authError.status === 422) {
+            throw new Error('Ovaj e-mail je već registrovan! Molimo unesite drugi e-mail ili se prijavite.');
+          }
+          throw authError;
+        }
 
-        statusDiv.textContent = 'Učitavanje slike na server...';
+        statusDiv.textContent = '🖼️ Učitavanje slike na server...';
 
         // 2. Upload slike
         const file = fileInput.files[0];
@@ -204,9 +215,9 @@
           finalImageUrl = urlData.publicUrl;
         }
 
-        statusDiv.textContent = 'Spremanje podataka profila i provjera...';
+        statusDiv.textContent = '💾 Spremanje podataka profila u bazu...';
 
-        // 3. Upis u tabelu UPOZNAVANJ_KORISNICI (uključujući SITE: "LANGLOVE")
+        // 3. Upis u tabelu UPOZNAVANJ_KORISNICI
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .insert([
@@ -240,28 +251,24 @@
           ]);
         }
 
-        // 5. Provjera statusa profila i slanje izvještaja adminu
-        console.log("IZVJEŠTAJ ZA ADMINA: Novi korisnik se registrovao.");
-        console.log("Korisnik:", ime, "Email:", email);
-        console.log("Facebook ID:", facebook);
-        console.log("LinkedIn Profil:", linkedin);
-        console.log("Status: Profil uspješno kreiran i poslat na verifikaciju.");
-
         document.getElementById('registerForm').reset();
 
-        statusDiv.style.color = 'green';
-        statusDiv.textContent = 'Registracija uspješna! Izvještaj poslan adminu. Preusmjeravanje...';
+        statusDiv.style.color = '#15803d';
+        statusDiv.style.backgroundColor = '#dcfce7';
+        statusDiv.textContent = '✅ Registracija uspješna! Preusmjeravanje na prijavu...';
 
         setTimeout(() => {
           window.location.href = 'LOGIN.html';
         }, 2000);
 
       } catch (err) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Greška: ' + err.message;
+        console.error("Greška pri registraciji:", err);
+        statusDiv.style.color = '#d90429';
+        statusDiv.style.backgroundColor = '#ffe5e9';
+        statusDiv.textContent = '❌ Greška: ' + (err.message || 'Došlo je do neočekivane greške.');
         regBtn.disabled = false;
       }
-    }
+    });
   </script>
 
 </body>
