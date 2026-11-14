@@ -1,467 +1,657 @@
 <!DOCTYPE html>
 <html lang="bs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LANGLOVE - Pronađi svoju ljubav i partnere</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+  <link rel="shortcut icon" href="#">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretraga Profila | LjubavNaPrviKlik</title>
 
-        body {
-            background-color: #f8fafc;
-            color: #1e293b;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            top: 0 !important;
-        }
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        /* Google Translate skriva standardnu traku */
-        .goog-te-banner-frame, .skiptranslate > iframe {
-            display: none !important;
-        }
-        .goog-te-gadget-icon {
-            display: none !important;
-        }
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    /* Navigacija sa svim fajlovima */
+    header { background: linear-gradient(135deg, #e11d48, #be123c); color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 15px; }
+    .logo { font-size: 24px; font-weight: 800; letter-spacing: 1px; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    
+    nav ul { display: flex; list-style: none; gap: 10px; align-items: center; flex-wrap: wrap; }
+    nav a { color: white; text-decoration: none; font-weight: 600; padding: 8px 14px; border-radius: 8px; transition: background 0.2s; font-size: 14px; display: inline-block; }
+    nav a:hover, nav a.active { background: rgba(255, 255, 255, 0.25); }
 
-        /* Navigacija */
-        header {
-            background: linear-gradient(135deg, #e11d48, #be123c);
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .lang-select { padding: 6px 10px; border-radius: 20px; border: 1px solid #d90429; background: #fff; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: white;
-        }
+    .main-container { flex: 1; max-width: 950px; width: 100%; margin: 25px auto; padding: 0 15px; }
+    .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+    .search-filters { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    .search-filters input, .search-filters select { padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 0.92rem; }
+    .search-filters input[type="text"] { flex: 2; min-width: 180px; }
+    .search-filters select { flex: 1; min-width: 130px; }
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 8px 14px;
-            border-radius: 8px;
-            transition: background 0.2s;
-            font-size: 14px;
-            display: inline-block;
-        }
+    .btn-search { background: #d90429; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+    .btn-search:hover { background: #ef233c; }
+    
+    .btn-ext-file { background: #2b2d42; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .btn-ext-file:hover { background: #3d405b; color: #fff; }
 
-        nav a:hover, nav a.active {
-            background: rgba(255, 255, 255, 0.25);
-        }
+    .section-header { margin-top: 25px; font-size: 1.1rem; font-weight: bold; color: #2b2d42; border-bottom: 2px solid #d90429; padding-bottom: 5px; }
 
-        /* Traka za selekciju jezika i filter */
-        .lang-picker-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 6px 12px;
-            border-radius: 20px;
-            backdrop-filter: blur(5px);
-        }
+    .results-container { margin-top: 15px; display: flex; flex-direction: column; gap: 15px; }
+    
+    .user-card { display: flex; align-items: flex-start; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 12px; background: #fafafa; flex-wrap: wrap; }
+    .user-avatar { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; background: #e2e8f0; }
+    
+    .user-details { flex: 1; min-width: 200px; }
+    .user-details h3 { color: #d90429; margin-bottom: 8px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    
+    .badge { font-size: 0.75rem; background: #2b2d42; color: #fff; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
+    .user-box { background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.9rem; margin-top: 6px; }
 
-        .lang-picker-container input {
-            border: none;
-            outline: none;
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 13px;
-            width: 110px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #0f172a;
-        }
+    .card-buttons { display: flex; gap: 8px; align-self: center; flex-wrap: wrap; }
+    .btn-view { background: #d90429; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-view:hover { background: #ef233c; }
+    .btn-chat { background: #2b2d42; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; }
+    .btn-chat:hover { background: #3d405b; }
+    .btn-invite { background: #25d366; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-invite:hover { background: #20ba5a; }
 
-        .lang-picker-container select {
-            border: none;
-            outline: none;
-            background: white;
-            color: #0f172a;
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            max-width: 150px;
-        }
+    #statusMsg { margin-top: 10px; font-size: 0.9rem; font-weight: 600; color: #0056b3; }
 
-        /* Hero Banner */
-        .hero {
-            background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)), url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80') center/cover;
-            color: white;
-            text-align: center;
-            padding: 70px 20px;
-        }
+    /* MODAL STILOVI */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+    .modal-card { background: #fff; width: 100%; max-width: 650px; border-radius: 12px; max-height: 90vh; overflow-y: auto; padding: 25px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+    .modal-close { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; font-weight: bold; color: #777; cursor: pointer; border: none; background: none; }
+    .modal-close:hover { color: #d90429; }
+    
+    .profile-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 12px; }
+    .gallery-img { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; transition: transform 0.2s; }
+    .gallery-img:hover { transform: scale(1.03); }
 
-        .hero h1 {
-            font-size: 38px;
-            margin-bottom: 15px;
-        }
-
-        .hero p {
-            font-size: 18px;
-            max-width: 600px;
-            margin: 0 auto 25px auto;
-            color: #cbd5e1;
-        }
-
-        .hero-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            background-color: #e11d48;
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            font-size: 16px;
-            font-weight: 700;
-            border-radius: 25px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-
-        .btn-primary:hover {
-            background-color: #be123c;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid white;
-            padding: 10px 26px;
-            font-size: 16px;
-            font-weight: 700;
-            border-radius: 25px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-
-        .btn-secondary:hover {
-            background-color: white;
-            color: #0f172a;
-            transform: translateY(-2px);
-        }
-
-        /* Main sadržaj & Profili */
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-            flex: 1;
-            width: 100%;
-        }
-
-        .section-title {
-            font-size: 24px;
-            margin-bottom: 25px;
-            text-align: center;
-            color: #0f172a;
-        }
-
-        .profiles-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 25px;
-        }
-
-        .profile-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .profile-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .profile-img {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
-        }
-
-        .profile-info {
-            padding: 20px;
-        }
-
-        .profile-name {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .profile-location {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .profile-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-like, .btn-msg {
-            flex: 1;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            text-align: center;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .btn-like {
-            background-color: #ffe4e6;
-            color: #e11d48;
-        }
-
-        .btn-like:hover {
-            background-color: #e11d48;
-            color: white;
-        }
-
-        .btn-msg {
-            background-color: #e2e8f0;
-            color: #1e293b;
-        }
-
-        .btn-msg:hover {
-            background-color: #cbd5e1;
-        }
-
-        /* Footer */
-        footer {
-            background-color: #0f172a;
-            color: #94a3b8;
-            text-align: center;
-            padding: 25px;
-            margin-top: auto;
-            font-size: 14px;
-        }
-
-        footer a {
-            color: #e11d48;
-            text-decoration: none;
-            margin: 0 8px;
-        }
-    </style>
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+    footer a { color: #e11d48; text-decoration: none; margin: 0 5px; }
+  </style>
 </head>
 <body>
 
-    <!-- Skriveni Google Translate Element -->
-    <div id="google_translate_element" style="display:none;"></div>
+  <!-- Navigacija sa svim fajlovima iz tvog repozitorija -->
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LANGLOVE</a>
+    
+    <nav>
+      <ul>
+        <li><a href="DASHBOARD.html">Početna</a></li>
+        <li><a href="PRETRAGA.html" class="active">Istraži</a></li>
+        <li><a href="PORUKE.html">Poruke</a></li>
+        <li><a href="CHAT.html">Chat</a></li>
+        <li><a href="FORUM.html">Forum</a></li>
+        <li><a href="ZABAVA.html">Zabava</a></li>
+        <li><a href="PROFIL.html">Moj Profil</a></li>
+        <li><a href="LOGIN.html" style="background: rgba(0,0,0,0.25);">Prijava</a></li>
+      </ul>
+    </nav>
 
-    <!-- Navigacija direktno povezana sa tvojim fajlovima iz repozitorija -->
-    <header>
-        <a href="DASHBOARD.html" class="logo">
-            ❤️ LANGLOVE
-        </a>
+    <div class="nav-actions">
+      <select id="langSelect" class="lang-select" onchange="promijeniJezik(this.value)">
+        <option value="BS" selected>🌐 BS</option>
+        <option value="EN">🌐 EN</option>
+        <option value="DE">🌐 DE</option>
+      </select>
+    </div>
+  </header>
 
-        <!-- Pretraživač i Birač Jezika -->
-        <div class="lang-picker-container">
-            <span>🌐</span>
-            <input type="text" id="lang-filter" placeholder="Traži jezik..." onkeyup="filterLanguages()">
-            <select id="custom-language-select" onchange="translatePage(this.value)">
-                <optgroup label="Glavni jezici / Main languages">
-                    <option value="bs">Bosanski / Hrvatski / Srpski</option>
-                    <option value="en">English (Engleski)</option>
-                    <option value="de">Deutsch (Njemački)</option>
-                    <option value="fr">Français (Francuski)</option>
-                    <option value="es">Español (Španski)</option>
-                    <option value="it">Italiano (Italijanski)</option>
-                    <option value="ru">Русский (Ruski)</option>
-                    <option value="tr">Türkçe (Turski)</option>
-                    <option value="ar">العربية (Arapski)</option>
-                    <option value="zh-CN">中文 (Kineski)</option>
-                </optgroup>
-                <optgroup label="Ostali jezici">
-                    <option value="sq">Shqip (Albanski)</option>
-                    <option value="nl">Nederlands (Holandski)</option>
-                    <option value="pl">Polski (Poljski)</option>
-                    <option value="sv">Svenska (Švedski)</option>
-                </optgroup>
-            </select>
+  <div class="main-container">
+    <div class="card">
+      <h2 id="txtMainTitle">🔍 Napredna Pretraga Profila</h2>
+      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;" id="txtMainSub">Pretražite lokalnu bazu ili otvorite vanjske mreže:</p>
+
+      <div class="search-filters">
+        <input type="text" id="searchInput" placeholder="Ime, grad, opis..." onkeypress="handleKeyPress(event)">
+        
+        <select id="spolSelect" onchange="filtrirajLokalnuBazu()">
+          <option value="ALL" id="optSpolAll">Svi spolovi</option>
+          <option value="Musko" id="optSpolM">👨 Muško</option>
+          <option value="Zensko" id="optSpolF">👩 Žensko</option>
+        </select>
+
+        <select id="godineSelect" onchange="filtrirajLokalnuBazu()">
+          <option value="ALL" id="optGodAll">Sve godine</option>
+          <option value="18-25">18 - 25</option>
+          <option value="26-35">26 - 35</option>
+          <option value="36-50">36 - 50</option>
+          <option value="50+">50+</option>
+        </select>
+
+        <select id="vjeraSelect" onchange="filtrirajLokalnuBazu()">
+          <option value="ALL" id="optVjAll">Sve vjere</option>
+          <option value="Islam" id="optVjIsl">Islam</option>
+          <option value="Krscanstvo" id="optVjKrs">Kršćanstvo</option>
+          <option value="Pravoslavlje" id="optVjPra">Pravoslavlje</option>
+          <option value="Ostalo" id="optVjOst">Ostalo / Neizjašnjen</option>
+        </select>
+
+        <button class="btn-search" id="btnSearch" onclick="filtrirajLokalnuBazu()">🔍 Pretraži Bazu</button>
+
+        <a href="javascript:void(0)" onclick="otvoriFajlInternet()" class="btn-ext-file">🌐 PRETRAGA INTERNET</a>
+      </div>
+
+      <div id="statusMsg">Učitavanje svih korisnika iz baze...</div>
+
+      <div class="section-header" id="txtSecUsers">👥 Svi korisnici u bazi (UPOZNAVANJ_KORISNICI)</div>
+      <div id="korisniciList" class="results-container"></div>
+
+      <div class="section-header" style="margin-top: 35px;" id="txtSecImages">🖼️ Profili iz tabele SLIKE</div>
+      <div id="slikeList" class="results-container"></div>
+
+    </div>
+  </div>
+
+  <div id="profileModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" onclick="zatvoriModal()">&times;</button>
+      
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+        <img id="mAvatar" src="" class="user-avatar" style="width: 85px; height: 85px;" alt="Avatar">
+        <div>
+          <h2 id="mIme" style="color: #d90429;">-</h2>
+          <p id="mBadges" style="margin-top: 4px;"></p>
         </div>
+      </div>
+      
+      <div class="user-box" style="margin-bottom: 8px;">
+        <strong id="lblAbout">O meni:</strong> <span id="mJa">-</span>
+      </div>
+      <div class="user-box" style="margin-bottom: 15px;">
+        <strong id="lblLooking">Tražim:</strong> <span id="mTrazim">-</span>
+      </div>
 
-        <nav>
-            <ul>
-                <li><a href="DASHBOARD.html" class="active">Početna</a></li>
-                <li><a href="PRETRAGA.html">Istraži</a></li>
-                <li><a href="PORUKE.html">Poruke</a></li>
-                <li><a href="CHAT.html">Chat</a></li>
-                <li><a href="FORUM.html">Forum</a></li>
-                <li><a href="ZABAVA.html">Zabava</a></li>
-                <li><a href="PROFIL.html">Moj Profil</a></li>
-                <li><a href="LOGIN.html" id="auth-link" style="background: rgba(0,0,0,0.25);">Odjava / Prijava</a></li>
-            </ul>
-        </nav>
-    </header>
+      <h4 style="margin-bottom: 8px; color: #2b2d42; border-bottom: 1px solid #eee; padding-bottom: 4px;" id="lblUserPics">📸 Slike korisnika:</h4>
+      <div id="mGallery" class="profile-gallery">
+        <p style="color: #888; font-size: 0.85rem;" id="lblLoadingGallery">Učitavanje slika...</p>
+      </div>
 
-    <!-- Hero dio -->
-    <section class="hero">
-        <h1>Dobrodošli na LANGLOVE Dashboard</h1>
-        <p>Istraži profile, šalji poruke, učestvuj na forumu ili uredi svoj profil.</p>
-        <div class="hero-buttons">
-            <a href="PRETRAGA.html" class="btn-primary">🔍 Istraži profile</a>
-            <a href="PROFIL.html" class="btn-secondary">👤 Moj Profil</a>
-            <a href="CHAT.html" class="btn-secondary">💬 Otvori Chat</a>
-        </div>
-    </section>
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-chat" id="btnCloseModal" onclick="zatvoriModal()">Zatvori</button>
+        <button id="mChatBtn" class="btn-view" style="background:#2b2d42;">💬 Započni Chat</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- Prikaz Profila -->
-    <main class="container">
-        <h2 class="section-title">Preporučeni profili</h2>
+  <footer>
+    <p style="margin-bottom: 8px;">
+      <a href="index.html">Početna</a> |
+      <a href="O_NAMA.html">O nama</a> |
+      <a href="JEZICI.html">Jezici</a> |
+      <a href="DODAJ_KORISNIKA.html">Dodaj korisnika</a> |
+      <a href="REGISTRACIJA.html">Registracija</a>
+    </p>
+    <p>© 2026 LANGLOVE.SITE. <span id="txtRights">Sva prava zadržana.</span></p>
+  </footer>
 
-        <div class="profiles-grid">
-            <!-- Profil 1 -->
-            <div class="profile-card">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80" alt="Ana" class="profile-img">
-                <div class="profile-info">
-                    <div class="profile-name">Ana, 24</div>
-                    <div class="profile-location">📍 Sarajevo, BiH</div>
-                    <div class="profile-actions">
-                        <button class="btn-like" onclick="likeProfile('Ana')">❤️ Sviđa mi se</button>
-                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
-                    </div>
-                </div>
+<script>
+  const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let sviKorisniciCache = [];
+  let trenutniJezik = 'BS';
+
+  const prevodi = {
+    BS: {
+      mainTitle: "🔍 Napredna Pretraga Profila",
+      mainSub: "Pretražite lokalnu bazu ili otvorite vanjske mreže:",
+      placeholder: "Ime, grad, opis...",
+      optSpolAll: "Svi spolovi",
+      optSpolM: "👨 Muško",
+      optSpolF: "👩 Žensko",
+      optGodAll: "Sve godine",
+      optVjAll: "Sve vjere",
+      optVjIsl: "Islam",
+      optVjKrs: "Kršćanstvo",
+      optVjPra: "Pravoslavlje",
+      optVjOst: "Ostalo / Neizjašnjen",
+      btnSearch: "🔍 Pretraži Bazu",
+      secUsers: "👥 Svi korisnici u bazi (UPOZNAVANJ_KORISNICI)",
+      secImages: "🖼️ Profili iz tabele SLIKE",
+      about: "O meni:",
+      lookingFor: "Tražim:",
+      btnView: "👁️ Pregledaj",
+      btnChat: "💬 Chat",
+      btnStartChat: "💬 Započni Chat",
+      btnClose: "Zatvori",
+      userPics: "📸 Slike korisnika:",
+      loading: "Učitavanje korisnika...",
+      loadingData: "Učitavanje podataka...",
+      noUsers: "Nema pronađenih profila u bazi korisnika.",
+      noImages: "Nema unosa u tabeli SLIKE.",
+      searchDone: "Prikazani svi korisnici iz baze.",
+      rights: "Sva prava zadržana."
+    },
+    EN: {
+      mainTitle: "🔍 Advanced Profile Search",
+      mainSub: "Search local database or open external networks:",
+      placeholder: "Name, city, description...",
+      optSpolAll: "All genders",
+      optSpolM: "👨 Male",
+      optSpolF: "👩 Female",
+      optGodAll: "All ages",
+      optVjAll: "All religions",
+      optVjIsl: "Islam",
+      optVjKrs: "Christianity",
+      optVjPra: "Orthodoxy",
+      optVjOst: "Other / Undisclosed",
+      btnSearch: "🔍 Search Database",
+      secUsers: "👥 All Database Users (UPOZNAVANJ_KORISNICI)",
+      secImages: "🖼️ Profiles from IMAGES Table",
+      about: "About me:",
+      lookingFor: "Looking for:",
+      btnView: "👁️ View",
+      btnChat: "💬 Chat",
+      btnStartChat: "💬 Start Chat",
+      btnClose: "Close",
+      userPics: "📸 User Pictures:",
+      loading: "Loading users...",
+      loadingData: "Loading data...",
+      noUsers: "No profiles found in the database.",
+      noImages: "No entries in IMAGES table.",
+      searchDone: "All database users displayed.",
+      rights: "All rights reserved."
+    },
+    DE: {
+      mainTitle: "🔍 Erweiterte Profilsuche",
+      mainSub: "Lokale Datenbank durchsuchen oder externe Netzwerke öffnen:",
+      placeholder: "Name, Stadt, Beschreibung...",
+      optSpolAll: "Alle Geschlechter",
+      optSpolM: "👨 Männlich",
+      optSpolF: "👩 Weiblich",
+      optGodAll: "Alle Altersgruppen",
+      optVjAll: "Alle Religionen",
+      optVjIsl: "Islam",
+      optVjKrs: "Christentum",
+      optVjPra: "Orthodoxie",
+      optVjOst: "Sonstiges / Keine Angabe",
+      btnSearch: "🔍 Datenbank Suchen",
+      secUsers: "👥 Alle Datenbankbenutzer (UPOZNAVANJ_KORISNICI)",
+      secImages: "🖼️ Profile aus der BILDER-Tabelle",
+      about: "Über mich:",
+      lookingFor: "Ich suche:",
+      btnView: "👁️ Ansehen",
+      btnChat: "💬 Chat",
+      btnStartChat: "💬 Chat Starten",
+      btnClose: "Schließen",
+      userPics: "📸 Benutzerbilder:",
+      loading: "Benutzer werden geladen...",
+      loadingData: "Daten werden geladen...",
+      noUsers: "Keine Profile in der Datenbank gefunden.",
+      noImages: "Keine Einträge in der BILDER-Tabelle.",
+      searchDone: "Alle Datenbankbenutzer angezeigt.",
+      rights: "Alle Rechte vorbehalten."
+    }
+  };
+
+  function promijeniJezik(lang) {
+    trenutniJezik = lang;
+    const t = prevodi[lang];
+
+    document.getElementById('txtMainTitle').innerText = t.mainTitle;
+    document.getElementById('txtMainSub').innerText = t.mainSub;
+    document.getElementById('searchInput').placeholder = t.placeholder;
+    document.getElementById('optSpolAll').innerText = t.optSpolAll;
+    document.getElementById('optSpolM').innerText = t.optSpolM;
+    document.getElementById('optSpolF').innerText = t.optSpolF;
+    document.getElementById('optGodAll').innerText = t.optGodAll;
+    document.getElementById('optVjAll').innerText = t.optVjAll;
+    document.getElementById('optVjIsl').innerText = t.optVjIsl;
+    document.getElementById('optVjKrs').innerText = t.optVjKrs;
+    document.getElementById('optVjPra').innerText = t.optVjPra;
+    document.getElementById('optVjOst').innerText = t.optVjOst;
+    document.getElementById('btnSearch').innerText = t.btnSearch;
+    document.getElementById('txtSecUsers').innerText = t.secUsers;
+    document.getElementById('txtSecImages').innerText = t.secImages;
+    document.getElementById('lblAbout').innerText = t.about;
+    document.getElementById('lblLooking').innerText = t.lookingFor;
+    document.getElementById('lblUserPics').innerText = t.userPics;
+    document.getElementById('btnCloseModal').innerText = t.btnClose;
+    document.getElementById('mChatBtn').innerText = t.btnStartChat;
+    document.getElementById('txtRights').innerText = t.rights;
+
+    filtrirajLokalnuBazu();
+  }
+
+  function getFallbackAvatar(name) {
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name || 'User')}`;
+  }
+
+  function kopirajVišejezičnuPozivnicu(ime) {
+    const oslovljavanjeIme = (ime && ime !== 'N/A' && !ime.includes('User')) ? ime : '';
+    const izborJezika = prompt("Na kojem jeziku priča ova osoba?\n\n1 = Bosanski/Hrvatski/Srpski\n2 = Engleski (English)\n3 = Njemački (Deutsch)", "1");
+    if (!izborJezika) return;
+
+    let poruka = "";
+    if (izborJezika === "2") {
+      const pozdrav = oslovljavanjeIme ? `Hi ${oslovljavanjeIme}` : `Hi there`;
+      poruka = `${pozdrav}! I came across your profile and thought I'd say hi. 🙂 Join me here: https://langlove.site`;
+    } else if (izborJezika === "3") {
+      const pozdrav = oslovljavanjeIme ? `Hallo ${oslovljavanjeIme}` : `Hallo`;
+      poruka = `${pozdrav}! Ich habe dein Profil gesehen und wollte hallo sagen. 🙂 Schreib mir hier: https://langlove.site`;
+    } else {
+      const pozdrav = oslovljavanjeIme ? `Hej ${oslovljavanjeIme}` : `Hej`;
+      poruka = `${pozdrav}, ćao! Naletio/la sam na tvoj profil i zvučiš baš zanimljivo. 🙂 Registruj se i piši mi ovdje: https://langlove.site`;
+    }
+
+    navigator.clipboard.writeText(poruka).then(() => {
+      alert("✅ Pozivnica je uspješno kopirana!");
+    });
+  }
+
+  async function ucitajSveKorisnikeOdmah() {
+    const t = prevodi[trenutniJezik];
+    const statusMsg = document.getElementById('statusMsg');
+    const korisniciList = document.getElementById('korisniciList');
+    const slikeList = document.getElementById('slikeList');
+
+    statusMsg.style.color = '#0056b3';
+    statusMsg.innerText = t.loading;
+    korisniciList.innerHTML = '';
+    slikeList.innerHTML = '';
+
+    try {
+      const { data: users, error: errUsers } = await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (errUsers) console.error('Greška UPOZNAVANJ_KORISNICI:', errUsers);
+      sviKorisniciCache = users || [];
+
+      if (users && users.length > 0) {
+        users.forEach((u, idx) => {
+          const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'N/A');
+          const ime = (u.IME && u.IME !== 'AA') ? u.IME : ((u.ime && u.ime !== 'AA') ? u.ime : mail.split('@')[0]);
+          const ja = u.JA || u.ja || '-';
+          const trazim = u.TRAZIM || u.trazim || '-';
+          const uSpol = u.SPOL || u.spol || 'N/A';
+          const uGodine = u.GODINE || u.godine || 'N/A';
+          const uVjera = u.VJERA || u.vjera || 'N/A';
+          
+          let rawSlika = u.SLIKE_URL || u.slike_url;
+          let slika = (rawSlika && rawSlika.trim().length > 5 && !rawSlika.includes('AA')) ? rawSlika : getFallbackAvatar(ime);
+
+          const card = document.createElement('div');
+          card.className = 'user-card';
+          card.innerHTML = `
+            <img src="${slika}" class="user-avatar" alt="${ime}" onerror="this.onerror=null; this.src='${getFallbackAvatar(ime)}';">
+            
+            <div class="user-details">
+              <h3>${ime} <span class="badge">${uSpol}</span> <span class="badge">${uGodine} god.</span> <span class="badge">${uVjera}</span></h3>
+              
+              <div class="user-box"><strong>${t.about}</strong> ${ja}</div>
+              <div class="user-box"><strong>${t.lookingFor}</strong> ${trazim}</div>
             </div>
 
-            <!-- Profil 2 -->
-            <div class="profile-card">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" alt="Marko" class="profile-img">
-                <div class="profile-info">
-                    <div class="profile-name">Marko, 28</div>
-                    <div class="profile-location">📍 Mostar, BiH</div>
-                    <div class="profile-actions">
-                        <button class="btn-like" onclick="likeProfile('Marko')">❤️ Sviđa mi se</button>
-                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
-                    </div>
-                </div>
+            <div class="card-buttons">
+              <button class="btn-view" onclick="otvoriProfilModal(${idx})">${t.btnView}</button>
+              <button class="btn-chat" onclick="pokreniChat('${mail}')">${t.btnChat}</button>
+              <button class="btn-invite" onclick="kopirajVišejezičnuPozivnicu('${ime}')">📋 Pozivnica</button>
             </div>
+          `;
+          korisniciList.appendChild(card);
+        });
+      } else {
+        korisniciList.innerHTML = `<p style="color:#777; padding:10px;">${t.noUsers}</p>`;
+      }
 
-            <!-- Profil 3 -->
-            <div class="profile-card">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" alt="Ema" class="profile-img">
-                <div class="profile-info">
-                    <div class="profile-name">Ema, 22</div>
-                    <div class="profile-location">📍 Banja Luka, BiH</div>
-                    <div class="profile-actions">
-                        <button class="btn-like" onclick="likeProfile('Ema')">❤️ Sviđa mi se</button>
-                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
-                    </div>
-                </div>
-            </div>
+      const { data: slike, error: errSlike } = await _supabase
+        .from('SLIKE')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-            <!-- Profil 4 -->
-            <div class="profile-card">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" alt="Haris" class="profile-img">
-                <div class="profile-info">
-                    <div class="profile-name">Haris, 26</div>
-                    <div class="profile-location">📍 Tuzla, BiH</div>
-                    <div class="profile-actions">
-                        <button class="btn-like" onclick="likeProfile('Haris')">❤️ Sviđa mi se</button>
-                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+      if (slike && slike.length > 0) {
+        const vidjeniKorisnici = new Set();
+        let brojacJedinstvenih = 0;
 
-    <!-- Footer povezan sa ostalim tvojim stranicama -->
-    <footer>
-        <p style="margin-bottom: 10px;">
-            <a href="index.html">Početna</a> |
-            <a href="O_NAMA.html">O nama</a> |
-            <a href="JEZICI.html">Jezici</a> |
-            <a href="PRETRAGA_INTERNET.html">Internet pretraga</a> |
-            <a href="DODAJ_KORISNIKA.html">Dodaj korisnika</a> |
-            <a href="REGISTRACIJA.html">Registracija</a>
-        </p>
-        <p>&copy; 2026 <a href="index.html">LANGLOVE.SITE</a>. Sva prava zadržana.</p>
-    </footer>
+        slike.forEach(s => {
+          const kId = s.korisnik_id || s.USER || 'ID';
+          let rawImgUrl = s.url || s.SLIKA_URL || s.slika;
+          let imgUrl = (rawImgUrl && rawImgUrl.trim().length > 5 && !rawImgUrl.includes('AA')) ? rawImgUrl : getFallbackAvatar(kId);
 
-    <!-- Google Translate Skripta -->
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'bs',
-                autoDisplay: false
-            }, 'google_translate_element');
+          if (!vidjeniKorisnici.has(kId)) {
+            vidjeniKorisnici.add(kId);
+            brojacJedinstvenih++;
+
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            card.innerHTML = `
+              <img src="${imgUrl}" class="user-avatar" alt="Slika" onerror="this.onerror=null; this.src='${getFallbackAvatar(kId)}';">
+              <div class="user-details">
+                <h3>User ID: ${kId.substring(0, 12)}...</h3>
+                <p class="user-info">SLIKE Table Profile</p>
+              </div>
+              <div class="card-buttons">
+                <button class="btn-view" onclick="otvoriBrziSlikeModal('${kId}', '${imgUrl}')">${t.btnView}</button>
+                <button class="btn-chat" onclick="pokreniChat('${kId}')">${t.btnChat}</button>
+                <button class="btn-invite" onclick="kopirajVišejezičnuPozivnicu('User')">📋 Pozivnica</button>
+              </div>
+            `;
+            slikeList.appendChild(card);
+          }
+        });
+
+        if (brojacJedinstvenih === 0) {
+          slikeList.innerHTML = `<p style="color:#777; padding:10px;">${t.noImages}</p>`;
         }
+      } else {
+        slikeList.innerHTML = `<p style="color:#777; padding:10px;">${t.noImages}</p>`;
+      }
 
-        function translatePage(langCode) {
-            var select = document.querySelector('.goog-te-combo');
-            if (select) {
-                select.value = langCode;
-                select.dispatchEvent(new Event('change'));
-            }
-        }
+      statusMsg.style.color = '#28a745';
+      statusMsg.innerText = t.searchDone;
 
-        function filterLanguages() {
-            var input = document.getElementById('lang-filter');
-            var filter = input.value.toLowerCase();
-            var select = document.getElementById('custom-language-select');
-            var options = select.getElementsByTagName('option');
+    } catch (err) {
+      statusMsg.style.color = 'red';
+      statusMsg.innerText = 'Error: ' + err.message;
+    }
+  }
 
-            for (var i = 0; i < options.length; i++) {
-                var txtValue = options[i].textContent || options[i].innerText;
-                if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                    options[i].style.display = "";
-                } else {
-                    options[i].style.display = "none";
-                }
-            }
-        }
+  function filtrirajLokalnuBazu() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    const spol = document.getElementById('spolSelect').value;
+    const godineRange = document.getElementById('godineSelect').value;
+    const vjera = document.getElementById('vjeraSelect').value;
 
-        function likeProfile(name) {
-            alert('Poslali ste lajk korisniku ' + name + '!');
-        }
-    </script>
-    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    const korisniciList = document.getElementById('korisniciList');
+    const statusMsg = document.getElementById('statusMsg');
+    const t = prevodi[trenutniJezik];
+
+    korisniciList.innerHTML = '';
+
+    if (!sviKorisniciCache || sviKorisniciCache.length === 0) {
+      korisniciList.innerHTML = `<p style="color:#777; padding:10px;">${t.noUsers}</p>`;
+      return;
+    }
+
+    const filtrirani = sviKorisniciCache.filter(u => {
+      const mail = (u.MAIL || u.mail || '').toLowerCase();
+      const ime = (u.IME || u.ime || '').toLowerCase();
+      const ja = (u.JA || u.ja || '').toLowerCase();
+      const trazim = (u.TRAZIM || u.trazim || '').toLowerCase();
+      const uSpol = u.SPOL || u.spol || '';
+      const uGodine = parseInt(u.GODINE || u.godine || 0);
+      const uVjera = u.VJERA || u.vjera || '';
+
+      const udesavaQuery = !query || ime.includes(query) || mail.includes(query) || ja.includes(query) || trazim.includes(query);
+      const udesavaSpol = (spol === 'ALL') || (uSpol === spol);
+      const udesavaVjeru = (vjera === 'ALL') || (uVjera === vjera);
+
+      let udesavaGodine = true;
+      if (godineRange === '18-25') udesavaGodine = (uGodine >= 18 && uGodine <= 25);
+      else if (godineRange === '26-35') udesavaGodine = (uGodine >= 26 && uGodine <= 35);
+      else if (godineRange === '36-50') udesavaGodine = (uGodine >= 36 && uGodine <= 50);
+      else if (godineRange === '50+') udesavaGodine = (uGodine > 50);
+
+      return udesavaQuery && udesavaSpol && udesavaVjeru && udesavaGodine;
+    });
+
+    if (filtrirani.length > 0) {
+      filtrirani.forEach((u, idx) => {
+        const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'N/A');
+        const ime = (u.IME && u.IME !== 'AA') ? u.IME : ((u.ime && u.ime !== 'AA') ? u.ime : mail.split('@')[0]);
+        const ja = u.JA || u.ja || '-';
+        const trazim = u.TRAZIM || u.trazim || '-';
+        const uSpol = u.SPOL || u.spol || 'N/A';
+        const uGodine = u.GODINE || u.godine || 'N/A';
+        const uVjera = u.VJERA || u.vjera || 'N/A';
+        
+        let rawSlika = u.SLIKE_URL || u.slike_url;
+        let slika = (rawSlika && rawSlika.trim().length > 5 && !rawSlika.includes('AA')) ? rawSlika : getFallbackAvatar(ime);
+
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        card.innerHTML = `
+          <img src="${slika}" class="user-avatar" alt="${ime}" onerror="this.onerror=null; this.src='${getFallbackAvatar(ime)}';">
+          
+          <div class="user-details">
+            <h3>${ime} <span class="badge">${uSpol}</span> <span class="badge">${uGodine} god.</span> <span class="badge">${uVjera}</span></h3>
+            
+            <div class="user-box"><strong>${t.about}</strong> ${ja}</div>
+            <div class="user-box"><strong>${t.lookingFor}</strong> ${trazim}</div>
+          </div>
+
+          <div class="card-buttons">
+            <button class="btn-view" onclick="otvoriProfilModal(${idx})">${t.btnView}</button>
+            <button class="btn-chat" onclick="pokreniChat('${mail}')">${t.btnChat}</button>
+            <button class="btn-invite" onclick="kopirajVišejezičnuPozivnicu('${ime}')">📋 Pozivnica</button>
+          </div>
+        `;
+        korisniciList.appendChild(card);
+      });
+      statusMsg.style.color = '#28a745';
+      statusMsg.innerText = `Pronađeno korisnika u bazi: ${filtrirani.length}`;
+    } else {
+      korisniciList.innerHTML = `<p style="color:#777; padding:10px;">Nema korisnika koji odgovaraju zadanim filterima.</p>`;
+      statusMsg.style.color = '#d90429';
+      statusMsg.innerText = 'Nema rezultata u lokalnoj bazi.';
+    }
+  }
+
+  function otvoriFajlInternet() {
+    const query = document.getElementById('searchInput').value.trim();
+    const spol = document.getElementById('spolSelect').value;
+    const godine = document.getElementById('godineSelect').value;
+    window.location.href = `PRETRAGA_INTERNET.html?q=${encodeURIComponent(query)}&spol=${encodeURIComponent(spol)}&godine=${encodeURIComponent(godine)}`;
+  }
+
+  async function otvoriProfilModal(index) {
+    const t = prevodi[trenutniJezik];
+    const u = sviKorisniciCache[index];
+    if (!u) return;
+
+    const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'N/A');
+    const ime = (u.IME && u.IME !== 'AA') ? u.IME : ((u.ime && u.ime !== 'AA') ? u.ime : mail.split('@')[0]);
+    const ja = u.JA || u.ja || '-';
+    const trazim = u.TRAZIM || u.trazim || '-';
+    const uSpol = u.SPOL || u.spol || 'N/A';
+    const uGodine = u.GODINE || u.godine || 'N/A';
+    const uVjera = u.VJERA || u.vjera || 'N/A';
+    
+    let rawSlikaGl = u.SLIKE_URL || u.slike_url;
+    let slikaGl = (rawSlikaGl && rawSlikaGl.trim().length > 5 && !rawSlikaGl.includes('AA')) ? rawSlikaGl : getFallbackAvatar(ime);
+
+    const userId = u.user || u.USER || u.id;
+
+    document.getElementById('mAvatar').src = slikaGl;
+    document.getElementById('mIme').innerText = ime;
+    document.getElementById('mBadges').innerHTML = `<span class="badge">${uSpol}</span> <span class="badge">${uGodine} god.</span> <span class="badge">${uVjera}</span>`;
+    document.getElementById('mJa').innerText = ja;
+    document.getElementById('mTrazim').innerText = trazim;
+    document.getElementById('mChatBtn').onclick = () => pokreniChat(mail);
+
+    const mGallery = document.getElementById('mGallery');
+    mGallery.innerHTML = `<p style="color: #888;">${t.loadingData}</p>`;
+    document.getElementById('profileModal').style.display = 'flex';
+
+    try {
+      let querySlike = _supabase.from('SLIKE').select('*');
+      if (userId && mail) {
+        querySlike = querySlike.or(`korisnik_id.eq.${userId},korisnik_id.eq.${mail}`);
+      } else if (userId) {
+        querySlike = querySlike.eq('korisnik_id', userId);
+      }
+
+      const { data: gallery } = await querySlike;
+      mGallery.innerHTML = '';
+
+      if (gallery && gallery.length > 0) {
+        gallery.forEach(imgObj => {
+          let url = imgObj.url || imgObj.SLIKA_URL || imgObj.slika;
+          if (url && url.trim().length > 5 && !url.includes('AA')) {
+            const imgEl = document.createElement('img');
+            imgEl.src = url;
+            imgEl.className = 'gallery-img';
+            imgEl.onclick = () => window.open(url, '_blank');
+            mGallery.appendChild(imgEl);
+          }
+        });
+      } else {
+        mGallery.innerHTML = `<img src="${slikaGl}" class="gallery-img" onclick="window.open('${slikaGl}', '_blank')">`;
+      }
+    } catch (e) {
+      mGallery.innerHTML = `<img src="${slikaGl}" class="gallery-img" onclick="window.open('${slikaGl}', '_blank')">`;
+    }
+  }
+
+  async function otvoriBrziSlikeModal(korisnikId, glSlika) {
+    let slikaSafe = (glSlika && glSlika.trim().length > 5 && !glSlika.includes('AA')) ? glSlika : getFallbackAvatar(korisnikId);
+
+    document.getElementById('mAvatar').src = slikaSafe;
+    document.getElementById('mIme').innerText = 'User ' + korisnikId.substring(0, 8);
+    document.getElementById('mBadges').innerHTML = `<span class="badge">SLIKE</span>`;
+    document.getElementById('mJa').innerText = 'SLIKE Table Profile';
+    document.getElementById('mTrazim').innerText = '-';
+    document.getElementById('mChatBtn').onclick = () => pokreniChat(korisnikId);
+
+    const mGallery = document.getElementById('mGallery');
+    mGallery.innerHTML = '<p style="color: #888;">Loading...</p>';
+    document.getElementById('profileModal').style.display = 'flex';
+
+    try {
+      const { data: gallery } = await _supabase.from('SLIKE').select('*').or(`korisnik_id.eq.${korisnikId},USER.eq.${korisnikId}`);
+      mGallery.innerHTML = '';
+      if (gallery && gallery.length > 0) {
+        gallery.forEach(imgObj => {
+          let url = imgObj.url || imgObj.SLIKA_URL || imgObj.slika;
+          if (url && url.trim().length > 5 && !url.includes('AA')) {
+            const imgEl = document.createElement('img');
+            imgEl.src = url;
+            imgEl.className = 'gallery-img';
+            imgEl.onclick = () => window.open(url, '_blank');
+            mGallery.appendChild(imgEl);
+          }
+        });
+      } else {
+        mGallery.innerHTML = `<img src="${slikaSafe}" class="gallery-img" onclick="window.open('${slikaSafe}', '_blank')">`;
+      }
+    } catch (e) {
+      mGallery.innerHTML = `<img src="${slikaSafe}" class="gallery-img" onclick="window.open('${slikaSafe}', '_blank')">`;
+    }
+  }
+
+  function zatvoriModal() {
+    document.getElementById('profileModal').style.display = 'none';
+  }
+
+  function pokreniChat(partnerMail) {
+    window.location.href = `PORUKE.html?to=${encodeURIComponent(partnerMail)}`;
+  }
+
+  window.onload = () => {
+    ucitajSveKorisnikeOdmah();
+  };
+</script>
 </body>
 </html>
