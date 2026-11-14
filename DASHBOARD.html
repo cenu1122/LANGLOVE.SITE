@@ -52,13 +52,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
+            text-decoration: none;
+            color: white;
         }
 
         nav ul {
             display: flex;
             list-style: none;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -67,14 +68,15 @@
             color: white;
             text-decoration: none;
             font-weight: 600;
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 8px;
             transition: background 0.2s;
-            cursor: pointer;
+            font-size: 14px;
+            display: inline-block;
         }
 
         nav a:hover, nav a.active {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
         }
 
         /* Traka za selekciju jezika i filter */
@@ -112,25 +114,16 @@
             max-width: 150px;
         }
 
-        /* Sekcije stranice (SPA princip) */
-        .page-section {
-            display: none;
-            flex: 1;
-        }
-        .page-section.active {
-            display: block;
-        }
-
         /* Hero Banner */
         .hero {
             background: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)), url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80') center/cover;
             color: white;
             text-align: center;
-            padding: 80px 20px;
+            padding: 70px 20px;
         }
 
         .hero h1 {
-            font-size: 40px;
+            font-size: 38px;
             margin-bottom: 15px;
         }
 
@@ -141,15 +134,24 @@
             color: #cbd5e1;
         }
 
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
         .btn-primary {
             background-color: #e11d48;
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 12px 28px;
             font-size: 16px;
             font-weight: 700;
             border-radius: 25px;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
             transition: background-color 0.2s, transform 0.2s;
         }
 
@@ -158,11 +160,32 @@
             transform: translateY(-2px);
         }
 
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 26px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: white;
+            color: #0f172a;
+            transform: translateY(-2px);
+        }
+
         /* Main sadržaj & Profili */
         .container {
             max-width: 1200px;
             margin: 40px auto;
             padding: 0 20px;
+            flex: 1;
             width: 100%;
         }
 
@@ -214,57 +237,41 @@
             margin-bottom: 15px;
         }
 
-        .btn-like {
-            width: 100%;
-            background-color: #ffe4e6;
-            color: #e11d48;
+        .profile-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-like, .btn-msg {
+            flex: 1;
             border: none;
             padding: 10px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
         }
 
-        .btn-like:hover, .btn-like.liked {
+        .btn-like {
+            background-color: #ffe4e6;
+            color: #e11d48;
+        }
+
+        .btn-like:hover {
             background-color: #e11d48;
             color: white;
         }
 
-        /* Kartice za forme i poruke */
-        .box-card {
-            background: white;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        .btn-msg {
+            background-color: #e2e8f0;
+            color: #1e293b;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-        }
-
-        .chat-box {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 15px;
-            min-height: 200px;
-            background: #f8fafc;
-            margin-bottom: 15px;
+        .btn-msg:hover {
+            background-color: #cbd5e1;
         }
 
         /* Footer */
@@ -280,6 +287,7 @@
         footer a {
             color: #e11d48;
             text-decoration: none;
+            margin: 0 8px;
         }
     </style>
 </head>
@@ -288,11 +296,11 @@
     <!-- Skriveni Google Translate Element -->
     <div id="google_translate_element" style="display:none;"></div>
 
-    <!-- Navigacija -->
+    <!-- Navigacija direktno povezana sa tvojim fajlovima iz repozitorija -->
     <header>
-        <div class="logo" onclick="showSection('pocetna')">
+        <a href="DASHBOARD.html" class="logo">
             ❤️ LANGLOVE
-        </div>
+        </a>
 
         <!-- Pretraživač i Birač Jezika -->
         <div class="lang-picker-container">
@@ -322,248 +330,103 @@
 
         <nav>
             <ul>
-                <li><a id="nav-pocetna" class="active" onclick="showSection('pocetna')">Početna</a></li>
-                <li><a id="nav-istrazi" onclick="showSection('istrazi')">Istraži</a></li>
-                <li><a id="nav-poruke" onclick="showSection('poruke')">Poruke (<span id="msg-count">0</span>)</a></li>
-                <li><a id="nav-profil" onclick="showSection('profil')">Moj Profil</a></li>
-                <li><a id="nav-auth" onclick="handleAuthClick()" style="background: rgba(0,0,0,0.2);">Prijava</a></li>
+                <li><a href="DASHBOARD.html" class="active">Početna</a></li>
+                <li><a href="PRETRAGA.html">Istraži</a></li>
+                <li><a href="PORUKE.html">Poruke</a></li>
+                <li><a href="CHAT.html">Chat</a></li>
+                <li><a href="FORUM.html">Forum</a></li>
+                <li><a href="ZABAVA.html">Zabava</a></li>
+                <li><a href="PROFIL.html">Moj Profil</a></li>
+                <li><a href="LOGIN.html" id="auth-link" style="background: rgba(0,0,0,0.25);">Odjava / Prijava</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- 1. SEKCIJA: POČETNA -->
-    <div id="sec-pocetna" class="page-section active">
-        <section class="hero">
-            <h1>Upoznaj nove ljude u svojoj blizini</h1>
-            <p>Spoji se s osobama sličnih interesa, započni razgovor i pronađi idealnog partnera na LANGLOVE platformi.</p>
-            <button class="btn-primary" onclick="showSection('prijava')">Pridruži se odmah</button>
-        </section>
+    <!-- Hero dio -->
+    <section class="hero">
+        <h1>Dobrodošli na LANGLOVE Dashboard</h1>
+        <p>Istraži profile, šalji poruke, učestvuj na forumu ili uredi svoj profil.</p>
+        <div class="hero-buttons">
+            <a href="PRETRAGA.html" class="btn-primary">🔍 Istraži profile</a>
+            <a href="PROFIL.html" class="btn-secondary">👤 Moj Profil</a>
+            <a href="CHAT.html" class="btn-secondary">💬 Otvori Chat</a>
+        </div>
+    </section>
 
-        <main class="container">
-            <h2 class="section-title">Preporučeni profili</h2>
-            <div class="profiles-grid" id="home-profiles"></div>
-        </main>
-    </div>
+    <!-- Prikaz Profila -->
+    <main class="container">
+        <h2 class="section-title">Preporučeni profili</h2>
 
-    <!-- 2. SEKCIJA: ISTRAŽI -->
-    <div id="sec-istrazi" class="page-section">
-        <main class="container">
-            <h2 class="section-title">Istraži profile po gradu ili imenu</h2>
-            <div style="max-width: 400px; margin: 0 auto 30px auto;">
-                <input type="text" id="city-search" placeholder="Unesi grad (npr. Sarajevo, Tuzla)..." 
-                       onkeyup="renderExplore()" 
-                       style="width:100%; padding:12px; border-radius:25px; border:1px solid #cbd5e1; outline:none;">
-            </div>
-            <div class="profiles-grid" id="explore-profiles"></div>
-        </main>
-    </div>
-
-    <!-- 3. SEKCIJA: PORUKE -->
-    <div id="sec-poruke" class="page-section">
-        <main class="container">
-            <h2 class="section-title">Tvoje poruke i simpatije</h2>
-            <div class="box-card">
-                <div id="liked-list" style="margin-bottom: 15px; color: #64748b;">Još nikome niste poslali lajk.</div>
-                <div class="chat-box" id="chat-messages">
-                    <p style="color:#94a3b8; font-size:14px;">Izaberite osobu kojoj ste poslali lajk i započnite razgovor...</p>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="chat-input" placeholder="Napiši poruku..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
-                    <button class="btn-primary" style="padding:10px 20px; border-radius:8px;" onclick="sendMessage()">Pošalji</button>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- 4. SEKCIJA: MOJ PROFIL -->
-    <div id="sec-profil" class="page-section">
-        <main class="container">
-            <h2 class="section-title">Moj Profil</h2>
-            <div class="box-card" id="profile-content"></div>
-        </main>
-    </div>
-
-    <!-- 5. SEKCIJA: PRIJAVA -->
-    <div id="sec-prijava" class="page-section">
-        <main class="container">
-            <h2 class="section-title">Prijava na LANGLOVE</h2>
-            <div class="box-card">
-                <div class="form-group">
-                    <label>Vaše ime:</label>
-                    <input type="text" id="login-name" placeholder="Unesite vaše ime">
-                </div>
-                <div class="form-group">
-                    <label>Grad:</label>
-                    <input type="text" id="login-city" placeholder="npr. Lukavac, Sarajevo">
-                </div>
-                <div class="form-group">
-                    <label>Godine:</label>
-                    <input type="number" id="login-age" placeholder="npr. 30">
-                </div>
-                <button class="btn-primary" style="width:100%;" onclick="loginUser()">Prijavi se</button>
-            </div>
-        </main>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2026 <a href="#">LANGLOVE.SITE</a>. Sva prava zadržana.</p>
-    </footer>
-
-    <!-- Skripte -->
-    <script type="text/javascript">
-        const profiles = [
-            { name: "Ana", age: 24, city: "Sarajevo, BiH", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80" },
-            { name: "Marko", age: 28, city: "Mostar, BiH", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" },
-            { name: "Ema", age: 22, city: "Banja Luka, BiH", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" },
-            { name: "Haris", age: 26, city: "Tuzla, BiH", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" }
-        ];
-
-        let currentUser = JSON.parse(localStorage.getItem('langlove_user')) || null;
-        let likedUsers = JSON.parse(localStorage.getItem('langlove_likes')) || [];
-
-        // Funkcija za prebacivanje sekcija (SPA)
-        function showSection(sectionName) {
-            if (!currentUser && (sectionName === 'profil' || sectionName === 'poruke')) {
-                alert('Molimo prijavite se da biste pristupili ovoj sekciji!');
-                sectionName = 'prijava';
-            }
-
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-
-            document.getElementById('sec-' + sectionName).classList.add('active');
-            const navItem = document.getElementById('nav-' + sectionName);
-            if (navItem) navItem.classList.add('active');
-
-            if (sectionName === 'istrazi') renderExplore();
-            if (sectionName === 'profil') renderMyProfile();
-            if (sectionName === 'poruke') renderMessages();
-            
-            window.scrollTo(0, 0);
-        }
-
-        // Prijava korisnika
-        function loginUser() {
-            const name = document.getElementById('login-name').value.trim();
-            const city = document.getElementById('login-city').value.trim();
-            const age = document.getElementById('login-age').value.trim();
-
-            if (!name || !city || !age) {
-                alert('Molimo popunite sva polja!');
-                return;
-            }
-
-            currentUser = { name, city, age };
-            localStorage.setItem('langlove_user', JSON.stringify(currentUser));
-            updateAuthUI();
-            alert('Uspješno ste se prijavili, ' + name + '!');
-            showSection('profil');
-        }
-
-        // Upravljanje prijavom / odjavom u navigaciji
-        function handleAuthClick() {
-            if (currentUser) {
-                if (confirm('Želite li se odjaviti sa sistema?')) {
-                    currentUser = null;
-                    localStorage.removeItem('langlove_user');
-                    updateAuthUI();
-                    showSection('pocetna');
-                }
-            } else {
-                showSection('prijava');
-            }
-        }
-
-        function updateAuthUI() {
-            const authBtn = document.getElementById('nav-auth');
-            if (currentUser) {
-                authBtn.textContent = 'Odjava (' + currentUser.name + ')';
-            } else {
-                authBtn.textContent = 'Prijava';
-            }
-            document.getElementById('msg-count').textContent = likedUsers.length;
-        }
-
-        // Kreiranje kartica profila
-        function createCardHTML(p) {
-            const isLiked = likedUsers.includes(p.name);
-            return `
-                <div class="profile-card">
-                    <img src="${p.img}" alt="${p.name}" class="profile-img">
-                    <div class="profile-info">
-                        <div class="profile-name">${p.name}, ${p.age}</div>
-                        <div class="profile-location">📍 ${p.city}</div>
-                        <button class="btn-like ${isLiked ? 'liked' : ''}" onclick="likeProfile('${p.name}')">
-                            ${isLiked ? '💖 Sviđa vam se' : '❤️ Sviđa mi se'}
-                        </button>
+        <div class="profiles-grid">
+            <!-- Profil 1 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80" alt="Ana" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">Ana, 24</div>
+                    <div class="profile-location">📍 Sarajevo, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Ana')">❤️ Sviđa mi se</button>
+                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
                     </div>
                 </div>
-            `;
-        }
+            </div>
 
-        function renderHome() {
-            document.getElementById('home-profiles').innerHTML = profiles.map(createCardHTML).join('');
-        }
+            <!-- Profil 2 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80" alt="Marko" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">Marko, 28</div>
+                    <div class="profile-location">📍 Mostar, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Marko')">❤️ Sviđa mi se</button>
+                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
+                    </div>
+                </div>
+            </div>
 
-        function renderExplore() {
-            const query = document.getElementById('city-search').value.toLowerCase();
-            const filtered = profiles.filter(p => p.city.toLowerCase().includes(query) || p.name.toLowerCase().includes(query));
-            document.getElementById('explore-profiles').innerHTML = filtered.map(createCardHTML).join('');
-        }
+            <!-- Profil 3 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80" alt="Ema" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">Ema, 22</div>
+                    <div class="profile-location">📍 Banja Luka, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Ema')">❤️ Sviđa mi se</button>
+                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
+                    </div>
+                </div>
+            </div>
 
-        function likeProfile(name) {
-            if (!currentUser) {
-                alert('Morate se prijaviti da biste mogli lajkovati profile!');
-                showSection('prijava');
-                return;
-            }
-            if (!likedUsers.includes(name)) {
-                likedUsers.push(name);
-                localStorage.setItem('langlove_likes', JSON.stringify(likedUsers));
-                alert('Poslali ste lajk korisniku ' + name + '!');
-            } else {
-                alert('Već ste lajkovali ovog korisnika.');
-            }
-            updateAuthUI();
-            renderHome();
-            renderExplore();
-        }
+            <!-- Profil 4 -->
+            <div class="profile-card">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80" alt="Haris" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name">Haris, 26</div>
+                    <div class="profile-location">📍 Tuzla, BiH</div>
+                    <div class="profile-actions">
+                        <button class="btn-like" onclick="likeProfile('Haris')">❤️ Sviđa mi se</button>
+                        <a href="PORUKE.html" class="btn-msg">✉️ Poruka</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-        function renderMyProfile() {
-            if (!currentUser) return;
-            document.getElementById('profile-content').innerHTML = `
-                <h3 style="margin-bottom:10px;">👤 ${currentUser.name}, ${currentUser.age} god.</h3>
-                <p style="margin-bottom:10px; color:#64748b;">📍 Lokacija: ${currentUser.city}</p>
-                <p style="margin-bottom:20px;">❤️ Vaše simpatije (lajkovi): <strong>${likedUsers.join(', ') || 'Nema lajkova'}</strong></p>
-                <button class="btn-primary" onclick="handleAuthClick()" style="width:100%;">Odjavi se</button>
-            `;
-        }
+    <!-- Footer povezan sa ostalim tvojim stranicama -->
+    <footer>
+        <p style="margin-bottom: 10px;">
+            <a href="index.html">Početna</a> |
+            <a href="O_NAMA.html">O nama</a> |
+            <a href="JEZICI.html">Jezici</a> |
+            <a href="PRETRAGA_INTERNET.html">Internet pretraga</a> |
+            <a href="DODAJ_KORISNIKA.html">Dodaj korisnika</a> |
+            <a href="REGISTRACIJA.html">Registracija</a>
+        </p>
+        <p>&copy; 2026 <a href="index.html">LANGLOVE.SITE</a>. Sva prava zadržana.</p>
+    </footer>
 
-        function renderMessages() {
-            const listDiv = document.getElementById('liked-list');
-            if (likedUsers.length === 0) {
-                listDiv.innerHTML = 'Još nikome niste poslali lajk. Idite na početnu ili u sekciju Istraži i lajkujte nekoga!';
-            } else {
-                listDiv.innerHTML = '<strong>Vaši kontakti za chat:</strong> ' + likedUsers.join(', ');
-            }
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text) return;
-            if (likedUsers.length === 0) {
-                alert('Morate prvo lajkovati nekoga da biste se mogli dopisivati!');
-                return;
-            }
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML += `<p style="margin-bottom:8px;"><strong>${currentUser.name}:</strong> ${text}</p>`;
-            input.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Google Translate inicijalizacija
+    <!-- Google Translate Skripta -->
+    <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
                 pageLanguage: 'bs',
@@ -580,17 +443,24 @@
         }
 
         function filterLanguages() {
-            var filter = document.getElementById('lang-filter').value.toLowerCase();
-            var options = document.getElementById('custom-language-select').getElementsByTagName('option');
+            var input = document.getElementById('lang-filter');
+            var filter = input.value.toLowerCase();
+            var select = document.getElementById('custom-language-select');
+            var options = select.getElementsByTagName('option');
+
             for (var i = 0; i < options.length; i++) {
-                var txt = options[i].textContent || options[i].innerText;
-                options[i].style.display = txt.toLowerCase().includes(filter) ? "" : "none";
+                var txtValue = options[i].textContent || options[i].innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    options[i].style.display = "";
+                } else {
+                    options[i].style.display = "none";
+                }
             }
         }
 
-        // Pokretanje pri učitavanju stranice
-        updateAuthUI();
-        renderHome();
+        function likeProfile(name) {
+            alert('Poslali ste lajk korisniku ' + name + '!');
+        }
     </script>
     <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
